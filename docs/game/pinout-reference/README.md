@@ -1,13 +1,13 @@
-# Rally-X Pinout (third-party text file)
+# Rally-X pinout (third-party text file)
 
 Notes on `Rally-X-Pinout.txt`, a 119-line plain-text edge connector pinout for
 Logic Board I.
 
-> [!IMPORTANT]
-> **This is not a Midway document.** It is one person's transcription, last
-> revised in 1996, carrying a signed correction and an unresolved question in the
-> author's own words. It has been checked pin by pin against Midway's own
-> drawings, and it holds up — see [below](#why-it-looks-wrong-against-the-cabinet-harness).
+**This is not a Midway document.** It is one person's transcription, last revised
+in 1996, carrying a signed correction and an unresolved question in the author's
+own words. It has been checked pin by pin against Midway's own drawings, and it
+holds up. See
+[Why it looks wrong against the cabinet harness](#why-it-looks-wrong-against-the-cabinet-harness).
 
 ## Provenance
 
@@ -21,21 +21,21 @@ The file has no title block. What it does carry:
 | Revision         | `modified 96/11/18 by Paul T. (aq929@torfree.net)` |
 | Revision note    | `- parts/solder side was reversed`                 |
 
-The revision line is the important one. It records that an **earlier version of
-this file had the parts and solder sides swapped** — i.e. every letter/number
-pairing was mirrored — and that someone corrected it in November 1996. There is
-no way from this file to tell how long the wrong version circulated or whether
-copies of it are still in circulation.
+The revision line is the important one. It records that an earlier version of
+this file had the parts and solder sides swapped, mirroring every letter and
+number pairing, and that someone corrected it in November 1996. There is no way
+from this file to tell how long the wrong version circulated or whether copies of
+it are still in circulation.
 
 `Midway, 9 January 1981` is a claim about the source the author worked from, not
-a property of this file. Note that Board I's own logic schematic is dated 1/8/81
-and Board II's 1/9/81, so the cited date matches the other board's drawing while
-the part number matches this one. Nothing in the file resolves that.
+a property of this file. Board I's own logic schematic is dated 1/8/81 and Board
+II's 1/9/81, so the cited date matches the other board's drawing while the part
+number matches this one. Nothing in the file resolves that.
 
 The author is otherwise unidentified. The `torfree.net` domain places the
 revision on a community internet provider of the period rather than at any
-manufacturer or trade body — an inference from the address, which is all the file
-gives.
+manufacturer or trade body. That is an inference from the address, which is all
+the file gives.
 
 ## The pinout as given
 
@@ -77,16 +77,15 @@ of it is inference:
 > controls, and switches. Elsewhere on the schematic (pin F) there is a "N.C."
 > which is, I'm sure, a "No Care" pin.
 
-Two things follow. The author was **reading a schematic and inferring**, not
-copying a manufacturer's table — which is why the file carries `(?)` on pins `E`
-and `5` as well. And the author distinguishes two different `NC` marks and is
-confident about one and not the other.
+Two things follow. The author was reading a schematic and inferring, not copying
+a manufacturer's table, which is why the file carries `(?)` on pins `E` and `5`
+as well. And the author distinguishes two different `NC` marks, and is confident
+about one and not the other.
 
 ## Where it agrees with the manufacturer's drawings
 
 Checked against the connector list on Board I's logic schematic
-(`M051-00935-C023`) and the three cabinet wiring schematics, transcribed in
-[../fold-out-schematics/](../fold-out-schematics/) and
+(`M051-00935-C023`) and the three cabinet wiring schematics, both transcribed in
 [../midway-parts-operating-manual/cabinet-io.md](../midway-parts-operating-manual/cabinet-io.md).
 
 The whole control and coin group matches exactly: `H` coin switch, `J`/`8` start,
@@ -94,29 +93,29 @@ The whole control and coin group matches exactly: `H` coin switch, `J`/`8` start
 coin meter, `W`/`19` speaker, `C`/`D`/`3`/`4` +5V, `A`/`B`/`1`/`2` ground, `17`
 green, `V` blue, `18` composite sync.
 
-Two agreements are worth calling out because they are non-obvious:
+Two agreements are worth calling out because they are non-obvious.
 
 **Pin 15.** The file gives `Gnd (Cocktail only)`. Midway's board drawing names it
 `TO GND FOR C.T. ONLY`. Both treat it as a cabinet-type strap rather than a plain
 ground, which the cabinet wiring diagrams alone would not tell you.
 
-**Pin 7.** The file marks it `NC (?)` and spends its only footnote on it. Midway's
-board drawing marks pin 7 `NC` outright. The author's uncertainty was reasonable
-and the conclusion was right.
+**Pin 7.** The file marks it `NC (?)` and spends its only footnote on it.
+Midway's board drawing marks pin 7 `NC` outright. The author's uncertainty was
+reasonable and the conclusion was right.
 
 ## Why it looks wrong against the cabinet harness
 
-An earlier pass through these notes recorded eight pins as *conflicts* with
+An earlier pass through these notes recorded eight entries as *conflicts* with
 Midway, on the strength of the three cabinet wiring schematics. That was a
 misreading of those schematics, not a fault in this file. The file is right on
 all eight.
 
-The cabinet wiring schematics label the monitor and supply lines by **wire
-colour** — `RED`, `BLU`, `GRN`, `R-Y`, `W-BRN`, `R-G` — in the same convention
-they use for `R-W` red/white and `BR-B` brown/black everywhere else. Board I's
-own logic schematic (`M051-00935-C023`) lists the same connector with functional
-signal names. On the pins in question those two things do not line up, and the
-board's list is the authority:
+The cabinet wiring schematics label the monitor and supply lines by wire colour:
+`RED`, `BLU`, `GRN`, `R-Y`, `W-BRN` and `R-G`, in the same convention they use
+for `R-W` red/white and `BR-B` brown/black everywhere else. Board I's own logic
+schematic (`M051-00935-C023`) lists the same connector with functional signal
+names. On the pins in question those two things do not line up, and the board's
+list is the authority:
 
 | Pin                  | This file          | Board I connector list           | Verdict                  |
 | -------------------- | ------------------ | -------------------------------- | ------------------------ |
@@ -127,26 +126,25 @@ board's list is the authority:
 | `V`                  | `Blue`             | `BLUE GUN`                       | agrees                   |
 | `X`, `20`            | `+12V`             | `+12 V IN FR. P.S.`              | agrees                   |
 | `Y`, `Z`, `21`, `22` | `Gnd (+12V)`       | `C.T. GND` / `12 V`              | agrees                   |
-| `E`, `5`             | `Credit Mult. (?)` | `CREDIT MULT`, `PWR CREDIT MULT` | agrees; the `(?)` can go |
+| `E`, `5`             | `Credit Mult. (?)` | `CREDIT MULT`, `PWR CREDIT MULT` | agrees. The `(?)` can go  |
 
-The video pins are the instructive case. The harness runs a **red/yellow** wire
-to pin `U` and a **solid red** wire to pin `16`. Read as signal names those look
-like red video on `16`; read as wire colours — which is what they are — the board
-puts the **red gun on `U`** and **monitor ground on `16`**, exactly as this file
-says.
+The video pins are the instructive case. The harness runs a red/yellow wire to
+pin `U` and a solid red wire to pin `16`. Read as signal names, those look like
+red video on `16`. Read as wire colours, which is what they are, the board puts
+the red gun on `U` and monitor ground on `16`, exactly as this file says.
 
 So the file's author was working from the logic schematic, which is the better
 source, and got the video and supply groups right. The `(?)` marks on pins `E`
-and `5` were unnecessary caution: the board list names both.
+and `5` were unnecessary caution. The board list names both.
 
 ## What it still does not resolve
 
 **Pin `F`.** The file gives `(Not Used)` and the footnote reasons that pin `F` is
 marked `N.C.` on the schematic. Board I's list does carry a `COIN METER` label in
 that group, but the four labels there sit slightly out of step with their pin
-boxes, so whether `COIN METER` belongs to `F` or to `6` is not settled by the
-scan. The file's `(Not Used)` for `F` and `Coin Meter` for `6` is one reading of
-an ambiguous drawing, not a contradiction of it.
+boxes, so the scan does not settle whether `COIN METER` belongs to `F` or to `6`.
+The file's `(Not Used)` for `F` and `Coin Meter` for `6` is one reading of an
+ambiguous drawing, not a contradiction of it.
 
 **Pin `S`.** Left blank on the parts side here. Board I's list does not name it
 either.
@@ -157,8 +155,7 @@ Every pin in it that can be checked against Board I's connector list checks out,
 including the video and supply groups that a comparison against the cabinet
 harness alone makes look wrong. For the 44-pin connector it is a sound reference.
 
-Two cautions remain, both from the file itself rather than from its content.
-An earlier revision had the parts and solder sides reversed, so any copy found
-elsewhere should be checked for the `96/11/18` line before being trusted. And it
-covers Logic Board I's edge connector only — not the 72-pin inter-board
-connector, and not Board II.
+Two cautions remain, both about the file itself rather than its content. An
+earlier revision had the parts and solder sides reversed, so check any copy found
+elsewhere for the `96/11/18` line before trusting it. And it covers Logic Board
+I's edge connector only, not the 72-pin inter-board connector and not Board II.

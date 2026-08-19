@@ -1,12 +1,12 @@
 # Cabinet I/O
 
 Everything the logic board set exchanges with the outside world crosses one
-44-pin edge connector: five control inputs per player, three start/credit
+44-pin edge connector: five control inputs per player, three start and credit
 inputs, four video lines, one audio line, the coin path, and power.
 
 The connector is on Game Logic Board I. Transcribed from the three cabinet wiring
 schematics, and cross-checked against the connector list on Board I's own logic
-schematic — see [boards.md](boards.md):
+schematic, which [boards.md](boards.md) covers:
 
 | Cabinet        | Game no. | Drawing           |
 | -------------- | -------- | ----------------- |
@@ -38,12 +38,12 @@ and `F`.
 | 12  | P2 Move Left       | `O-G`   | **cocktail only**                         |
 | 13  | P2 Smoke button    | `BLU-R` | **cocktail only**                         |
 | 14  | Test switch        | `O-W`   |                                           |
-| 15  | Cabinet-type strap | `Y-G`   | grounded on the cocktail only — see below |
+| 15  | Cabinet-type strap | `Y-G`   | grounded on the cocktail only, see below  |
 | 16  | Monitor ground     | `RED`   | monitor colour interface pin 3            |
 | 17  | Video green        | `GRN`   | monitor colour interface pin 5            |
 | 18  | Composite sync     | `ORN`   | monitor sync connector pin 1              |
 | 19  | Speaker            | `W-Y`   |                                           |
-| 20  | +12V from supply   | `W-BRN` | supply, not signal — see below            |
+| 20  | +12V from supply   | `W-BRN` | supply, not signal, see below             |
 | 21  | Logic GND          | `Y-G`   | tied to pin `Z`                           |
 | 22  | Logic GND          | `Y-G`   |                                           |
 
@@ -76,7 +76,7 @@ and `F`.
 The tables above were read off the cabinet wiring schematics, which label pins by
 wire colour and destination. Board I's logic schematic (`M051-00935-C023`) lists
 the same connector with Midway's functional signal names, and where the two
-differ the board drawing is the better source:
+differ the board drawing is the better source.
 
 Controls, coin and audio:
 
@@ -93,7 +93,7 @@ Controls, coin and audio:
 | `R`  | `CREDIT S.W.`  | `7`  | `NC`                   |
 | `8`  | `2 PLY SELECT` |      |                        |
 
-Video, supply and ground — this half of the list is drawn as bracketed groups
+Video, supply and ground. This half of the list is drawn as bracketed groups
 rather than one label per pin:
 
 | Pin(s)                  | Board I name              |
@@ -113,59 +113,58 @@ rather than one label per pin:
 | `F`                     | `COIN METER`              |
 | `6`                     | `COIN C`                  |
 
-> [!NOTE]
-> The four labels `PWR CREDIT MULT`, `CREDIT MULT`, `COIN METER` and
-> `COMP. SYNC TO MONITOR` sit slightly out of step with the pin boxes they
-> annotate, so the `F` / `6` pairing above is the least certain row in the table.
-> What is unambiguous is the wiring drawn into each pin: `+5V` into `5`,
-> `/RESET` into `E`, `COIN C` into `6`, and `CMPSYNC` through `R32` into `18`.
+The four labels `PWR CREDIT MULT`, `CREDIT MULT`, `COIN METER` and
+`COMP. SYNC TO MONITOR` sit slightly out of step with the pin boxes they
+annotate, so the `F` and `6` pairing above is the least certain row in the table.
+What is unambiguous is the wiring drawn into each pin: `+5V` into `5`, `/RESET`
+into `E`, `COIN C` into `6`, and `CMPSYNC` through `R32` into `18`.
 
 Three corrections fall out of this list:
 
-**Pin 7 is `NC`.** Not merely undrawn on the cabinet harnesses — the board
-drawing marks it explicitly as no-connect.
+**Pin 7 is `NC`.** Not merely undrawn on the cabinet harnesses. The board drawing
+marks it explicitly as no-connect.
 
 **Pin 15 is a cabinet-type strap, not just a ground.** The board names it
-`TO GND FOR C.T. ONLY` — grounded on the cocktail table and left open otherwise.
+`TO GND FOR C.T. ONLY`, grounded on the cocktail table and left open otherwise.
 It is an input that tells the board which cabinet it is in, and it is the only
 such input on the connector. The cabinet wiring schematics obscure this by
 drawing it as one more logic ground on the cocktail sheet and omitting it
 elsewhere.
 
-**There are two ground domains, not one.** `A`/`1`/`B`/`2` are the 5 V ground
-and `Y`/`21`/`Z`/`22` the 12 V ground, both labelled `C.T. GND`. `T` is
-`COMM. GND` and `16` is `MONITOR GND` — four distinct grounds in all. The cabinet
-harnesses draw every one of them with the same `Y-G` or `R-B` wire and the same
-`LOGIC GND` caption, which hides the split entirely.
+**The grounds are four separate nets, not one.** `A`/`1`/`B`/`2` are the 5 V
+ground and `Y`/`21`/`Z`/`22` the 12 V ground, both labelled `C.T. GND`. `T` is
+`COMM. GND` and `16` is `MONITOR GND`. The cabinet harnesses draw every one of
+them with the same `Y-G` or `R-B` wire and the same `LOGIC GND` caption. That
+hides the split entirely.
 
-Note also that the start buttons are named `1 PLY SELECT` and `2 PLY SELECT`
-rather than "start", and the test switch `TEST POS.` rather than "test".
+The start buttons are named `1 PLY SELECT` and `2 PLY SELECT` rather than
+"start", and the test switch `TEST POS.` rather than "test".
 
-Letters `F` and `S` do not appear on the cabinet harnesses. `F` is a key
-position; both are named on the Board I connector list above.
+Letters `F` and `S` do not appear on the cabinet harnesses. Board I's connector
+list names `F`, subject to the label placement above. Nothing in the manual names
+`S`.
 
-> [!WARNING]
-> On the cabinet wiring schematics the monitor colour interface entries are
-> **wire colours, not signal names**. `RED`, `BLU`, `GRN` and `R-Y` are red,
-> blue, green and red/yellow wires, in the same convention the rest of the
-> harness uses (`R-W` red/white, `BR-B` brown/black). Reading them as video
-> signals gets two pins backwards: the wire labelled `RED` runs to pin `16`,
-> which the board calls **monitor ground**, and the red/yellow wire runs to pin
-> `U`, which the board calls the **red gun**. Take the signal names from the
-> board's own connector list, not from the harness.
+On the cabinet wiring schematics the monitor colour interface entries are **wire
+colours, not signal names**. `RED`, `BLU`, `GRN` and `R-Y` are red, blue, green
+and red/yellow wires, in the same convention the rest of the harness uses (`R-W`
+red/white, `BR-B` brown/black). Reading them as video signals gets two pins
+backwards. The wire labelled `RED` runs to pin `16`, which the board calls
+monitor ground, and the red/yellow wire runs to pin `U`, which the board calls
+the red gun. Take the signal names from the board's own connector list, not from
+the harness.
 
 ## Controls
 
 Four-way joystick and one button per player. The button is the smoke screen.
 
-The **upright and mini wire Player 1 only.** Player 2's five inputs on pins
+**The upright and mini wire Player 1 only.** Player 2's five inputs on pins
 `9`–`13` exist solely on the cocktail, where the second control shelf plugs into
-them; the cocktail schematic brackets those five pins and labels them
+them. The cocktail schematic brackets those five pins and labels them
 `PLAYER #2 CONTROL`. On an upright, two-player games alternate on the Player 1
 stick and pins `9`–`13` are dead.
 
-The two start buttons are wired on both cabinets regardless — `J` for one player,
-`8` for two.
+The two start buttons are wired on all three cabinets regardless: `J` for one
+player, `8` for two.
 
 ## Video
 
@@ -181,16 +180,16 @@ Four lines to the monitor plus separate composite sync:
 ```
 
 Composite sync is its own 3-position connector, separate from colour. The
-inter-board connector calls this signal `/CMPSYNC` (see
-[boards.md](boards.md)) — the cabinet harness carries it on the orange wire.
+inter-board connector in [boards.md](boards.md) calls this signal `/CMPSYNC`. The
+cabinet harness carries it on the orange wire.
 
 ## Audio
 
 One audio line off the board on pin 19, returning on pin `W`, into a 6" x 9"
-8-ohm 9-watt speaker (Midway part `0017-00003-0187`). Audio supply comes back
-the other way on pin 20, which the board's connector list calls `+12 V IN FR.
-P.S.` and the power supply schematic calls `+V AUDIO ≈13V at 1.5 AMP` — the same
-rail under two names.
+8-ohm 9-watt speaker (Midway part `0017-00003-0187`). Audio supply comes back the
+other way on pin 20. The board's connector list calls that rail
+`+12 V IN FR. P.S.` and the power supply schematic calls it
+`+V AUDIO ≈13V at 1.5 AMP`, one rail under two names.
 
 There is one amplifier and one speaker. The volume pot on Board I sets the level
 of everything.
@@ -198,19 +197,19 @@ of everything.
 ## Coin and credit path
 
 Three separate things get called "credit" in this manual and they are not the
-same:
+same.
 
-**Coin switch** (pin `H`) — the actual coin mechanism switch in the door.
-Deposits a coin, advances the mechanical coin meter on pin 6, and awards credits
-according to the coinage dip setting.
+**Coin switch** (pin `H`). The actual coin mechanism switch in the door. Deposits
+a coin, advances the mechanical coin meter on pin 6, and awards credits according
+to the coinage dip setting.
 
-**Credit switch** (pin `R`) — a push button in the cash box area, reachable by
+**Credit switch** (pin `R`). A push button in the cash box area, reachable by
 opening the coin door. The manual is explicit about what makes it different:
 
 > This switch is provided as a test aid and awards one credit without advancing
 > coin meter.
 
-**Credit Bypass P.C.** (`A082-91109-A000`, via pin `E`) — a small board in the
+**Credit Bypass P.C.** (`A082-91109-A000`, via pin `E`). A small board in the
 harness of all three cabinets, between the coin switches and the game board.
 
 The optional **Credit Multiplier** board is a fourth thing again and is not
@@ -219,14 +218,14 @@ fitted by default. See [boards.md](boards.md).
 ## Test switch
 
 Pin 14. On the **mini and cocktail** this is a slide switch to the right of the
-cash box, next to the credit push button. Sliding it to `ON` puts the game in
-test mode; it is normally `OFF`.
+cash box, next to the credit push button. It is normally `OFF`. Sliding it to
+`ON` puts the game in test mode.
 
 The **upright** page of the manual describes only the credit push button and
 never mentions a test slide, though the upright wiring schematic clearly shows a
-switch on pin 14 labelled `TEST` / `ON`. Either the upright's switch is
-elsewhere in the cabinet or its page is simply incomplete. The manual does not
-resolve this.
+switch on pin 14 labelled `TEST` / `ON`. Either the upright's switch is elsewhere
+in the cabinet or its page is simply incomplete. The manual does not resolve
+this.
 
 What the test switch does is in [diagnostics.md](diagnostics.md).
 
@@ -234,8 +233,13 @@ What the test switch does is in [diagnostics.md](diagnostics.md).
 
 A tilt switch appears on all three wiring schematics, on a blue wire, wired in
 series with the control ground rail rather than to its own connector pin. The
-manual never mentions tilt in any of its text — no setup instruction, no test
-procedure, no parts callout. It is drawn and then ignored.
+manual never mentions tilt in any of its text. There is no setup instruction, no
+test procedure and no parts callout. It is drawn and then ignored.
+
+A later Midway service bulletin does mention it, and gives it a job: "Activate
+coin door tilt switch to start self test." That bulletin covers the whole Midway
+catalogue rather than Rally-X specifically, and it is transcribed in
+[../midway-service-notes/cross-game-pages.md](../midway-service-notes/cross-game-pages.md).
 
 ## Line voltage safety switch
 
@@ -248,5 +252,5 @@ cabinet, and the manual leads with it on every cabinet page:
 | Cocktail      | In the cabinet, left of the coin door  | Coin door is opened  |
 
 To restore power while servicing, pull the switch fully out. The transformer also
-has extra taps to compensate for a low or high supply line — see
-[power.md](power.md).
+has extra taps to compensate for a low or high supply line, as
+[power.md](power.md) records.

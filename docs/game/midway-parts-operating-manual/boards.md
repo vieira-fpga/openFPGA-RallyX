@@ -1,11 +1,11 @@
-# The Logic Board Set
+# The logic board set
 
 Rally-X is two logic boards joined by a 72-pin connector, plus a power supply
-board and two small credit boards. The two logic boards mount in a card rack —
-its parts list calls them `GAME LOGIC BOARD ASSY. - BOARD #1` and `- BOARD #2`,
-held by two retainers, two side supports and four nylon guides.
+board and two small credit boards. The two logic boards mount in a card rack. Its
+parts list calls them `GAME LOGIC BOARD ASSY. - BOARD #1` and `- BOARD #2`, held
+by two retainers, two side supports and four nylon guides.
 
-The manual never draws the pair as a block diagram; the split below is
+The manual never draws the pair as a block diagram. The split below is
 reconstructed from the two board schematics and the device inventory on manual
 page 40.
 
@@ -28,7 +28,7 @@ page 40.
                     controls, monitor, speaker, coin
 ```
 
-Board I carries the 44-pin cabinet connector; Board II does not. Every cabinet
+Board I carries the 44-pin cabinet connector. Board II does not. Every cabinet
 input and both video and audio outputs land on Board I.
 
 ## The boards, by part number
@@ -41,18 +41,17 @@ input and both video and audio outputs land on Board I.
 | `A082-91109-A000` | Credit Bypass P.C.     | In all three cabinets                                                |
 | `A082-91348-C000` | Credit Multiplier P.C. | Optional. Title block says "USED ON PAC-MAN"                         |
 
-> [!NOTE]
-> The two logic schematic numbers differ in their prefix as drawn — Board I's
-> reads `M051-`, Board II's reads `M501-`. Every other drawing number in the
-> manual uses `M051-`, so Board II's is probably a draughting error on the
-> original, but it is transcribed as it appears.
+The two logic schematic numbers differ in their prefix as drawn. Board I's reads
+`M051-` and Board II's reads `M501-`. Every other drawing number in the manual
+uses `M051-`, so Board II's is probably a draughting error on the original, but
+it is transcribed as it appears.
 
 Both schematics are two-sheet fold-outs, drawn by "M.M." and dated 1/8/81
 (Board I) and 1/9/81 (Board II). Their title blocks carry a small legend:
 a rectangle means a logic pin, a wedge means a board connector, and `P` marks a
 pull-up.
 
-The Credit Multiplier is a shared Midway part, not a Rally-X design — its title
+The Credit Multiplier is a shared Midway part, not a Rally-X design. Its title
 block names Pac-Man and its drawings carry `M051-00932-*` numbers from that
 game's document series. It is a 555, a 74193, two 7474s and a 7414 that turn one
 coin pulse into several, and it has nothing to do with game logic.
@@ -80,9 +79,9 @@ The volume pot controls the level of *all* sounds. There is no per-channel trim.
 
 ## Program ROM sockets
 
-Board II has eight ROM sockets in row 1: `1B`, `1C`, `1D`, `1E`, `1H`, `1J`,
+Board II has eight ROM sockets in column 1: `1B`, `1C`, `1D`, `1E`, `1H`, `1J`,
 `1K`, `1L`. They are wired as four logical ROMs of 4K each, and each logical ROM
-can be populated three different ways depending on the device type available.
+takes one of three device types.
 
 | Logical ROM | 2K devices (MB8516/2716) | 4K devices (µPD2332, TMM333) | 8K devices (µPD2364) |
 | ----------- | ------------------------ | ---------------------------- | -------------------- |
@@ -94,24 +93,27 @@ can be populated three different ways depending on the device type available.
 *Source: the ROM test table on manual page 6, cross-read with the socket
 positions on drawing `M051-00935-C024`.*
 
-A board populated with 2K parts fills all eight sockets; one populated with 4K
-mask ROMs fills four; one populated with 8K parts fills two. All three
-populations were shipped, and the self-test reports the same four ROM numbers
-regardless of which is fitted.
+A board built with 2K parts fills all eight sockets. With 4K mask ROMs it fills
+four. With 8K parts it fills two. All three populations were shipped, and the
+self-test reports the same four ROM numbers regardless of which is fitted.
 
-> [!NOTE]
-> The manual describes sockets and device types only. It does not say where any
-> ROM lands in the processor's address space, and there is no address map
-> anywhere in the document.
+The manual describes sockets and device types only. It does not say where any ROM
+lands in the processor's address space, and there is no address map anywhere in
+the document.
 
 The schematic labels the sockets `2716` with `(2332)` and `(2364)` annotated
 beside `1D` and `1K`, consistent with the table above.
 
+Midway's own assembly drawing for this board, dated 12/9/80, draws four ROM
+positions rather than eight, all of them 24-pin. See
+[../fold-out-schematics/logic-board-ii.md](../fold-out-schematics/logic-board-ii.md).
+The two documents disagree and neither acknowledges the other.
+
 ## RAM
 
 Twelve static RAMs, marked `2114-2` on the schematic, paired into six banks. The
-self-test names them by bank number and nibble — `RAM 3H` is the high nibble of
-bank 3, `RAM 3L` the low — and the manual gives the position of each:
+self-test names them by bank number and nibble, so `RAM 3H` is the high nibble of
+bank 3 and `RAM 3L` is the low nibble. The manual gives the position of each:
 
 | Bank | Low nibble (`L`) | High nibble (`H`) | Bus (from schematic) |
 | ---- | ---------------- | ----------------- | -------------------- |
@@ -122,25 +124,29 @@ bank 3, `RAM 3L` the low — and the manual gives the position of each:
 | 5    | `6M`             | `6F`              | Picture RAM data bus |
 | 6    | `6N`             | `6E`              | Picture RAM data bus |
 
-*Source: the RAM test table on manual page 6 for the positions; the bus split is
-read off the bus labels on drawing `M051-00935-C024`.*
+*Source: the RAM test table on manual page 6 for the positions. The bus split
+comes from the bus labels on drawing `M051-00935-C024`.*
+
+Midway renumbered the bank numbers in a service bulletin dated 11 June 1981,
+which calls the same six banks `0` to `5`. The board positions did not change.
+See [the bulletin](../midway-service-notes/rally-x-bulletin.md).
 
 The nibble pairing in the test messages means the parts are four bits wide, and
 the bus labels put two banks on the CPU side and four on the picture side. The
 manual states neither capacity nor address range for either group.
 
-The self-test walks all twelve — see [diagnostics.md](diagnostics.md).
+The self-test walks all twelve, as [diagnostics.md](diagnostics.md) sets out.
 
 ## Device inventory
 
-Manual page 40 is a per-board list of every device type with a one-line function,
-which is the single most informative page in the manual about what the machine
-is. It lists types, not positions or quantities.
+Manual page 40 is a per-board list of every device type with a one-line function.
+It is the single most informative page in the manual about what the machine is.
+It lists types, not positions or quantities.
 
-**Logic Board I** — `74LS00`, `74LS02`, `74LS04`, `74LS08`, `74LS20`, `74LS74`,
-`74LS75`, `74LS86`, `74S89`, `74LS138`, `74LS157`, `74LS161`, `74LS163`,
-`74LS174`, `74LS194`, `74LS259`, `74LS273`, `74LS367`, `74LS377`, `4006`,
-`4066`, `4070`, `4099`, plus:
+**Logic Board I** carries `74LS00`, `74LS02`, `74LS04`, `74LS08`, `74LS20`,
+`74LS74`, `74LS75`, `74LS86`, `74S89`, `74LS138`, `74LS157`, `74LS161`,
+`74LS163`, `74LS174`, `74LS194`, `74LS259`, `74LS273`, `74LS367`, `74LS377`,
+`4006`, `4066`, `4070` and `4099`, plus:
 
 | Part              | Function as printed     |
 | ----------------- | ----------------------- |
@@ -158,10 +164,10 @@ is. It lists types, not positions or quantities.
 | `2N3391`, `D40K1` | NPN transistor          |
 | `IN914`           | Diode                   |
 
-**Logic Board II** — `74LS00`, `74LS04`, `74LS08`, `74LS20`, `74LS32`, `74LS74`,
-`74LS86`, `74S89`, `74LS107`, `74LS138`, `74LS139`, `74LS157`, `74LS158`,
-`74LS161`, `74LS174`, `74LS245`, `74LS273`, `74LS293`, `74LS368`, `74LS374`,
-`74LS377`, plus:
+**Logic Board II** carries `74LS00`, `74LS04`, `74LS08`, `74LS20`, `74LS32`,
+`74LS74`, `74LS86`, `74S89`, `74LS107`, `74LS138`, `74LS139`, `74LS157`,
+`74LS158`, `74LS161`, `74LS174`, `74LS245`, `74LS273`, `74LS293`, `74LS368`,
+`74LS374` and `74LS377`, plus:
 
 | Part              | Function as printed             |
 | ----------------- | ------------------------------- |
@@ -182,13 +188,14 @@ is. It lists types, not positions or quantities.
 
 Four things this page settles that nothing else in the manual states:
 
-**The processor is a Z80**, on Board II, with an **18.432 MHz crystal**. Neither
-appears anywhere else in the document — not in the text, not in the self-test
-description, not in any other parts list.
+**The processor is a Z80**, on Board II, with an 18.432 MHz crystal. Neither
+appears anywhere else in the document, not in the text, not in the self-test
+description, and not in any other parts list.
 
 **Both customs have a stated function.** `NVC285` is a "Custom Z80 sync buss
 controller" and `NVC293` a "Custom video shifter". These are one-line functional
-descriptions, not internal descriptions — no pinout, no truth table, no timing.
+descriptions, not internal descriptions. There is no pinout, no truth table and
+no timing.
 
 **Both customs have a TTL replacement board.** `A082-91383-B000` and
 `A082-91388-A000` are listed as P.C. assemblies for the sync bus controller and
@@ -199,16 +206,16 @@ manual does not say when one would be fitted instead of the other.
 The list gives types rather than positions, so it does not say how many of each a
 board carries.
 
-Two entries look like draughting slips and are transcribed as printed: Board II's
-`74LS293` is glossed "4 Bit full adder" (a 74LS283 is the adder; a 74LS293 is a
-counter), and Board I's `MBM2147`/`93415` are glossed "1K x 1 Ram" where both
-parts are ordinarily 1K x 4 — the Board I schematic itself annotates them
-`1K x 4`.
+Two entries look like draughting slips and are transcribed as printed. Board II's
+`74LS293` is glossed "4 Bit full adder", where a 74LS283 is the adder and a
+74LS293 is a counter. Board I's `MBM2147` and `93415` are glossed "1K x 1 Ram",
+where both parts are ordinarily 1K x 4. The Board I schematic itself annotates
+them `1K x 4`.
 
-Note also that the two boards have overlapping but different TTL lists — Board I
-has the `74LS259` addressable latch, the `4099`, the `4006` shift register and
-the CMOS analogue parts; Board II has the `74LS245` transceiver and the
-`74LS374`. Neither list mentions the `4099`'s counterpart on the other board.
+The two boards have overlapping but different TTL lists. Board I has the `74LS259`
+addressable latch, the `4099`, the `4006` shift register and the CMOS analogue
+parts. Board II has the `74LS245` transceiver and the `74LS374`. Neither the
+`74LS259` nor the `4099` appears on Board II's list.
 
 ## What is on Board I
 
@@ -228,27 +235,26 @@ resolution the scan supports:
 Two things are worth separating out because the manual's own text contradicts or
 omits them.
 
-**The graphics ROMs are here, on Board I** — not with the program ROMs on Board
-II. That is consistent with the self-test, which checks the four program ROMs on
-Board II and states that the character ROM is not checked at all (see
-[diagnostics.md](diagnostics.md)).
+**The graphics ROMs are on Board I**, not with the program ROMs on Board II. That
+is consistent with the self-test, which checks the four program ROMs on Board II
+and states that the character ROM is not checked at all. See
+[diagnostics.md](diagnostics.md).
 
 **The `259` at `12M` is the machine's main latch.** Its outputs on the drawing
 include `FLIP`, `INT ON`, `SOUND ON` and `BANG`. `FLIP`, `INT ON` and `SOUND ON`
-also appear on the inter-board connector; `BANG` does not, and is used locally by
-the audio circuitry on Board I.
+also appear on the inter-board connector. `BANG` does not, and the audio
+circuitry on Board I uses it locally.
 
-> [!NOTE]
-> This inventory is partial. The Board I fold-out is the densest drawing in the
-> manual, spanning two landscape sheets at a scale where much of the TTL is at
-> the edge of legibility in this scan. Positions and device types above are the
-> ones that resolved cleanly. Nothing here should be read as a complete parts
-> list for the board, and no attempt has been made to trace nets.
+This inventory is partial. The Board I fold-out is the densest drawing in the
+manual, spanning two landscape sheets at a scale where much of the TTL is at the
+edge of legibility in this scan. Positions and device types above are the ones
+that resolved cleanly. Nothing here should be read as a complete parts list for
+the board, and no attempt has been made to trace nets.
 
 ## Inter-board connector
 
-Both schematics list the same 72 connector pins by name — down the right-hand
-edge of Board II's drawing and down the left-hand edge of Board I's. This is the
+Both schematics list the same 72 connector pins by name, down the right-hand edge
+of Board II's drawing and down the left-hand edge of Board I's. This is the
 interface between the two boards. The names are the drawings' own.
 
 | Pin | Signal      | Pin | Signal     | Pin | Signal     |
@@ -286,23 +292,25 @@ Notes on reading this table:
 
 - Pin 14's label did not resolve at any zoom the scan supports. It sits between
   `COD0` and `FLIP` and is probably another clock or code line, but that is a
-  guess and it is left blank rather than invented.
+  guess, and the cell is left blank rather than invented.
 - Pins 53–56 carry a trailing mark after the name (`4H*`) that is distinct from
   the plain `4V` on pin 47. Both forms appear on the same drawing, so the mark
-  means something — most likely a buffered or inverted copy — but the drawing has
-  no legend for it.
+  means something, most likely a buffered or inverted copy. The drawing has no
+  legend for it.
 - `HBLANK` appears twice, once plain on pin 20 and once barred on pin 33. Both
-  are drawn deliberately; they are not a transcription error.
+  are drawn deliberately. They are not a transcription error.
 - Pin numbering runs 1–72 with no letter side, unlike the cabinet edge connector
-  in [cabinet-io.md](cabinet-io.md), which uses the mixed number/letter scheme.
+  in [cabinet-io.md](cabinet-io.md), which uses the mixed number and letter
+  scheme.
 
 The list is the only place in the manual where the hardware designers' own signal
-names appear. Nothing else in the document uses them — the text refers to
+names appear. Nothing else in the document uses them. The text refers to
 "sounds", "the picture" and "the PC boards", never to `INTON` or `SFTLD`.
 
 ## Monitor
 
 The upright ships a 19-inch dual-sync colour monitor made by Electrohome, Midway
 part `0017-00003-0339`. The board drives it over the 6-position monitor colour
-interface and a 3-position sync connector — see [cabinet-io.md](cabinet-io.md).
-The monitor's own service documentation is not part of this manual.
+interface and a 3-position sync connector, both listed in
+[cabinet-io.md](cabinet-io.md). The monitor's own service documentation is not
+part of this manual.

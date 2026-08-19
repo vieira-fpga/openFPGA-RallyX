@@ -9,11 +9,11 @@ manual is silent, these notes are silent.
 
 ## What kind of document this is
 
-An operator's manual. It was written for a route technician with a screwdriver,
+An operator's manual. Midway wrote it for a route technician with a screwdriver,
 so it is precise about what an operator can see, set and touch, and silent about
 almost everything else.
 
-That shapes what can be learned from it. There is no memory map, no port bit
+That shapes what the manual can tell you. There is no memory map, no port bit
 table, no ROM checksum list, no cycle timing, and nothing about the custom parts
 beyond a one-line function each. What it does have is the factory switch card,
 the self-test behaviour, the ROM socket options, the cabinet wiring, a per-board
@@ -31,7 +31,7 @@ The manual covers three cabinets built around one board set:
 
 | Page                               | Contents                                                                 |
 | ---------------------------------- | ------------------------------------------------------------------------ |
-| [boards.md](boards.md)             | The two-board logic set, ROM/RAM socket map, inter-board connector       |
+| [boards.md](boards.md)             | The two-board logic set, ROM and RAM socket map, inter-board connector   |
 | [cabinet-io.md](cabinet-io.md)     | 44-pin edge connector, controls, video, audio, coin and credit path      |
 | [diagnostics.md](diagnostics.md)   | Power-on self-test, test mode, error messages, the switch and sound test |
 | [dip-switches.md](dip-switches.md) | The factory switch adjustment card                                       |
@@ -47,28 +47,28 @@ appears anywhere in these 52 pages.
 **Both logic boards are drawn.** The manual carries full schematics for Board I
 and Board II, as two two-sheet fold-outs on the four landscape pages near the
 back. They are the densest pages in the document and are only partly transcribed
-here — see [boards.md](boards.md) for what has been read off them and what has
+here. [boards.md](boards.md) records what has been read off them and what has
 not.
 
-**Sound and video are described by symptom, not by circuit.** The manual names
+**The manual describes sound and video by symptom, not by circuit.** It names
 fourteen distinct sounds and describes what the screen does in test mode, but
 never explains in prose how either is generated. The schematics show the
-circuits; no text accompanies them.
+circuits. No text accompanies them.
 
 **Roughly half the manual is mechanical.** The pages between the switch card and
-the schematics are cabinet parts lists — plexiglass, decals, coin doors, leg
-levelers, wood — ordered by part number, one photograph page and one table page
-per assembly. They are not transcribed here beyond the electrical items that
+the schematics are cabinet parts lists covering plexiglass, decals, coin doors,
+leg levelers and wood, ordered by part number, one photograph page and one table
+page per assembly. They are not transcribed here beyond the electrical items that
 appear in them.
 
 ## Reading these notes
 
 **Everything here is transcribed from a scan.** The source is a 52-page scanned
-PDF with no text layer; every table was read off a rendered page image. Where a
+PDF with no text layer. Every table was read off a rendered page image. Where a
 glyph did not resolve it is marked `(illegible)` rather than guessed.
 
 **Derived statements are labelled.** A few facts here come from reading two pages
-of the manual against each other rather than off one printed table — the RAM bus
+of the manual against each other rather than off one printed table. The RAM bus
 split in [boards.md](boards.md) is the main one. Those say so at the point of
 use. Nothing here is filled in from outside the manual.
 
@@ -76,13 +76,15 @@ use. Nothing here is filled in from outside the manual.
 document, which makes it better than most of what circulates. It is still a
 45-year-old operator's manual, and a few of its statements are incomplete or
 internally inconsistent. Those are flagged where they appear rather than
-resolved.
+resolved. Midway itself corrected one of them in a later service bulletin, which
+is transcribed in
+[../midway-service-notes/rally-x-bulletin.md](../midway-service-notes/rally-x-bulletin.md).
 
 ## Conventions
 
-Board positions are given as the manual gives them — a column letter and a row
-number, e.g. `6P`, `1B`. These are silkscreen positions and are the only names
-the manual uses for parts; there are no reference designators.
+Board positions are given as the manual gives them, a column number and a row
+letter, for example `6P` or `1B`. These are silkscreen positions and are the only
+names the manual uses for parts. There are no reference designators.
 
 Signal names are transcribed as drawn. An overbar in a schematic is written here
 as a leading `/`, so a barred `RESET` is `/RESET`.
@@ -99,8 +101,8 @@ errors.
 Transcribed from `.ignore/rallyx.pdf`. Individual drawing numbers are cited on
 the page that uses them.
 
-The scan carries at least one handwritten annotation from a previous owner. It is
-reproduced in [diagnostics.md](diagnostics.md) and marked as such — it is not
+The scan carries at least one handwritten annotation from a previous owner.
+[diagnostics.md](diagnostics.md) reproduces it and marks it as such. It is not
 Midway's word and is not corroborated by the manual.
 
 Rally-X © 1980 NAMCO LTD. The manual is Midway's.

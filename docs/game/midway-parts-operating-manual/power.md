@@ -1,11 +1,11 @@
-# Power Supply
+# Power supply
 
 Board `A084-90414-C935`. Schematic drawing `M051-00935-C025` (4 Dec 1980),
 assembly drawing `M051-00935-C028` (16 Jan 1981).
 
-Included because the supply rails constrain what the rest of the machine can be —
-in particular, the logic runs on a single +5V rail with a 5A budget, and the
-audio and coin circuits run on their own supplies well above it.
+Recorded here because the supply rails constrain what the rest of the machine
+can be. The logic runs on a single +5V rail with a 5A budget, and the audio and
+coin circuits run on their own supplies well above it.
 
 ## Rails
 
@@ -25,14 +25,15 @@ The supply presents its outputs on a 19-position connector:
 | 11                 | – V IND   |                          |
 | 6                  | KEY       | key slot, not a rail     |
 
-The `– Sense` line on pin 9 is why pin `T` exists on the cabinet edge connector
-(see [cabinet-io.md](cabinet-io.md)) — the regulator senses its ground reference
-at the load rather than at the board, so voltage drop in the harness does not
-pull the logic rail down.
+The `– Sense` line on pin 9 is why pin `T` exists on the cabinet edge connector,
+transcribed in [cabinet-io.md](cabinet-io.md). The regulator senses its ground
+reference at the load rather than at the board, so voltage drop in the harness
+does not pull the logic rail down.
 
 ## Regulation
 
-Three separate regulators, not one:
+Three regulators, not one. Four devices, because the +5V switcher splits into a
+controller and a pass transistor:
 
 | Device             | Position | Role                                 |
 | ------------------ | -------- | ------------------------------------ |
@@ -41,11 +42,11 @@ Three separate regulators, not one:
 | LM317              | Q1       | Adjustable linear regulator          |
 | TIP31 (or MT87/91) | Q3       | Display lights                       |
 
-The +5V logic rail is switched, not linear — an SG3532 controller driving a
-2N3055 through a ferrite bead, with a 20,000 µF bulk capacitor on the input side
-and a 470 µF output capacitor. Output voltage is set by a divider of 560 Ω and
-510 Ω around a 100 Ω trim pot (R6), so **the +5V rail is adjustable** and can be
-out of tolerance on a real board.
+The +5V logic rail is switched, not linear. An SG3532 controller drives a 2N3055
+through a ferrite bead, with a 20,000 µF bulk capacitor on the input side and a
+470 µF output capacitor. A divider of 560 Ω and 510 Ω around a 100 Ω trim pot
+(R6) sets the output voltage, so the +5V rail is adjustable and can be out of
+tolerance on a real board.
 
 Fuses: F1 2A, F2 8A, F3 7A.
 
@@ -63,8 +64,8 @@ cabinets:
 > Additional taps have been provided on the transformer to compensate for
 > fluctuating line voltage.
 
-Power switch location differs by cabinet, which is worth knowing before hunting
-for it:
+The power switch sits in a different place on each cabinet, which is worth
+knowing before hunting for it:
 
 | Cabinet  | Power switch location |
 | -------- | --------------------- |
@@ -72,19 +73,19 @@ for it:
 | Mini     | Back of the cabinet   |
 | Cocktail | Bottom of the cabinet |
 
-This is separate from the line voltage safety switch, which is documented in
-[cabinet-io.md](cabinet-io.md).
+The power switch is separate from the line voltage safety switch, which is
+transcribed in [cabinet-io.md](cabinet-io.md).
 
-## Two observations
+## Two things the schematic settles
 
 **Audio leaves the logic boards as one analogue line.** The board emits `AUDIO`
-on inter-board connector pin 61 (see [boards.md](boards.md)) into an amplifier
-running from the separate ±13V audio rails, through the volume pot on Board I,
-into the speaker. Everything between the sound circuitry and the speaker is
-analogue and adjustable.
+on inter-board connector pin 61, listed in [boards.md](boards.md), into an
+amplifier running from the separate ±13V audio rails, through the volume pot on
+Board I, into the speaker. Everything between the sound circuitry and the speaker
+is analogue and adjustable.
 
 **The +5V logic rail is adjustable.** R6 is a 100 Ω trim pot in the feedback
 divider of the switching regulator, so the rail's exact voltage is a field
 adjustment rather than a fixed value. The manual gives no setting procedure, no
-target voltage and no tolerance — it does not mention R6 in any text, only on the
+target voltage and no tolerance. It does not mention R6 in any text, only on the
 schematic.
