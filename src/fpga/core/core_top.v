@@ -820,7 +820,8 @@ HVGEN hvgen (
 
 assign video_rgb_clock = clk_core_6144;
 assign video_rgb_clock_90 = clk_core_6144_90deg;
-assign video_rgb = vidout_rgb;
+assign video_rgb = video_rgb_rallyx; //When Analogizer adapter and pocket_blank_screen are enabled 
+                                     //Blank video signal is send to the Pocket Screen
 assign video_de = vidout_de;
 assign video_skip = vidout_skip;
 assign video_vs = vidout_vs;
@@ -960,15 +961,21 @@ mf_pllbase mp1 (
     wire analogizer_ena = ena_analogizer_s; //Setting from Pocket Menu 'Enable Analogizer'
 
     //create aditional switch to blank Pocket screen.
-    wire [11:0] video_rgb_rallyx;
-    assign video_rgb_rallyx = (pocket_blank_screen && analogizer_ena) ? 12'h000000: rx_orgb;
+    wire [23:0] video_rgb_rallyx;
+    assign video_rgb_rallyx = (pocket_blank_screen && analogizer_ena) ? 24'h000000: vidout_rgb;
 
 
     //switch between Analogizer SNAC and Pocket Controls for P1-P4 (P3,P4 when uses PCEngine Multitap)
-    wire [15:0] p1_btn, p2_btn, p3_btn, p4_btn;
-    wire [31:0] p1_joy, p2_joy;
-    reg [31:0] p1_joystick, p2_joystick;
-    reg  [15:0] p1_controls, p2_controls;
+    wire [15:0] p1_btn; 
+    //wire [15:0] p2_btn; 
+    //wire [15:0] p3_btn; 
+    //wire [15:0] p4_btn;
+    wire [31:0] p1_joy; 
+    //wire [31:0] p2_joy;
+    reg [31:0] p1_joystick;
+    //reg [31:0] p2_joystick;
+    reg  [15:0] p1_controls;
+    //reg  [15:0] p2_controls;
 
     wire snac_is_analog = (snac_game_cont_type == 5'h12) || (snac_game_cont_type == 5'h13);
 
@@ -988,57 +995,61 @@ mf_pllbase mp1 (
         p1_right <= (snac_is_analog) ? p1_right_analog : p1_btn[3];
     end
     //! Player 2 ---------------------------------------------------------------------------
-    reg p2_up, p2_down, p2_left, p2_right;
-    wire p2_up_analog, p2_down_analog, p2_left_analog, p2_right_analog;
-    //using left analog joypad
-    assign p2_up_analog    = (p2_joy[15:8] < 8'h40) ? 1'b1 : 1'b0; //analog range UP 0x00 Idle 0x7F DOWN 0xFF, DEADZONE +- 0x15
-    assign p2_down_analog  = (p2_joy[15:8] > 8'hC0) ? 1'b1 : 1'b0; 
-    assign p2_left_analog  = (p2_joy[7:0]  < 8'h40) ? 1'b1 : 1'b0; //analog range LEFT 0x00 Idle 0x7F RIGHT 0xFF, DEADZONE +- 0x15
-    assign p2_right_analog = (p2_joy[7:0]  > 8'hC0) ? 1'b1 : 1'b0;
+    // reg p2_up, p2_down, p2_left, p2_right;
+    // wire p2_up_analog, p2_down_analog, p2_left_analog, p2_right_analog;
+    // //using left analog joypad
+    // assign p2_up_analog    = (p2_joy[15:8] < 8'h40) ? 1'b1 : 1'b0; //analog range UP 0x00 Idle 0x7F DOWN 0xFF, DEADZONE +- 0x15
+    // assign p2_down_analog  = (p2_joy[15:8] > 8'hC0) ? 1'b1 : 1'b0; 
+    // assign p2_left_analog  = (p2_joy[7:0]  < 8'h40) ? 1'b1 : 1'b0; //analog range LEFT 0x00 Idle 0x7F RIGHT 0xFF, DEADZONE +- 0x15
+    // assign p2_right_analog = (p2_joy[7:0]  > 8'hC0) ? 1'b1 : 1'b0;
 
-    always @(posedge clk_74a) begin
-        p2_up    <= (snac_is_analog) ? p2_up_analog    : p2_btn[0];
-        p2_down  <= (snac_is_analog) ? p2_down_analog  : p2_btn[1];
-        p2_left  <= (snac_is_analog) ? p2_left_analog  : p2_btn[2];
-        p2_right <= (snac_is_analog) ? p2_right_analog : p2_btn[3];
-    end
+    // always @(posedge clk_74a) begin
+    //     p2_up    <= (snac_is_analog) ? p2_up_analog    : p2_btn[0];
+    //     p2_down  <= (snac_is_analog) ? p2_down_analog  : p2_btn[1];
+    //     p2_left  <= (snac_is_analog) ? p2_left_analog  : p2_btn[2];
+    //     p2_right <= (snac_is_analog) ? p2_right_analog : p2_btn[3];
+    // end
     always @(posedge clk_74a) begin
         reg [31:0] p1_pocket_btn, p1_pocket_joy;
-        reg [31:0] p2_pocket_btn, p2_pocket_joy;
+        //reg [31:0] p2_pocket_btn, p2_pocket_joy;
 
         if((snac_game_cont_type == 5'h0) || !analogizer_ena) begin //SNAC is disabled
         //if((snac_game_cont_type == 5'h0)) begin //SNAC is disabled
             p1_controls <= cont1_key;
-            p2_controls <= cont2_key;
+            //p2_controls <= cont2_key;
         end
         else begin
         case(snac_cont_assignment[1:0])
         2'h0:    begin  //SNAC P1 -> Pocket P1
             p1_controls <= {p1_btn[15:4],p1_right,p1_left,p1_down,p1_up};
-            p2_controls <= cont1_key;
+            //p2_controls <= cont1_key;
             end
         2'h1: begin  //SNAC P1 -> Pocket P2
             p1_controls <= cont1_key;
-            p2_controls <= p1_btn;
+            //p2_controls <= p1_btn;
             end
         2'h2: begin //SNAC P1 -> Pocket P1, SNAC P2 -> Pocket P2
             p1_controls <= {p1_btn[15:4],p1_right,p1_left,p1_down,p1_up};
-            p2_controls <= {p2_btn[15:4],p2_right,p2_left,p2_down,p2_up};
+            //p2_controls <= {p2_btn[15:4],p2_right,p2_left,p2_down,p2_up};
             end
-        2'h3: begin //SNAC P1 -> Pocket P2, SNAC P2 -> Pocket P1
-            p1_controls <= {p2_btn[15:4],p2_right,p2_left,p2_down,p2_up};
-            p2_controls <= {p1_btn[15:4],p1_right,p1_left,p1_down,p1_up};
-            end
+        //2'h3: begin //SNAC P1 -> Pocket P2, SNAC P2 -> Pocket P1
+            //p1_controls <= {p2_btn[15:4],p2_right,p2_left,p2_down,p2_up};
+            //p2_controls <= {p1_btn[15:4],p1_right,p1_left,p1_down,p1_up};
+         //   end
         default: begin 
             p1_controls <= cont1_key;
-            p2_controls <= cont2_key;
+            //p2_controls <= cont2_key;
             end
         endcase
         end
     end
 
-    wire [15:0] p1_btn_CK, p2_btn_CK;
-    wire [31:0] p1_joy_CK, p2_joy_CK;
+
+    wire [15:0] p1_btn_CK; 
+    //wire [15:0] p2_btn_CK;
+    wire [31:0] p1_joy_CK; 
+    //wire [31:0] p2_joy_CK;
+    
     synch_3 #(
     .WIDTH(16)
     ) p1b_s (
@@ -1047,29 +1058,29 @@ mf_pllbase mp1 (
         clk_74a
     );
 
-    synch_3 #(
-        .WIDTH(16)
-    ) p2b_s (
-        p2_btn_CK,
-        p2_btn,
-        clk_74a
-    );
+//    synch_3 #(
+//        .WIDTH(16)
+//    ) p2b_s (
+//        p2_btn_CK,
+//        p2_btn,
+//        clk_74a
+//    );
 
-    synch_3 #(
-    .WIDTH(32)
-    ) p3b_s (
-        p1_joy_CK,
-        p1_joy,
-        clk_74a
-    );
+    // synch_3 #(
+    // .WIDTH(32)
+    // ) p3b_s (
+    //     p1_joy_CK,
+    //     p1_joy,
+    //     clk_74a
+    // );
         
-    synch_3 #(
-        .WIDTH(32)
-    ) p4b_s (
-        p2_joy_CK,
-        p2_joy,
-        clk_74a
-    );
+    // synch_3 #(
+    //     .WIDTH(32)
+    // ) p4b_s (
+    //     p2_joy_CK,
+    //     p2_joy,
+    //     clk_74a
+    // );
 
 
     // Video Y/C Encoder settings
@@ -1149,8 +1160,10 @@ mf_pllbase mp1 (
         //SNAC interface
         .p1_btn_state(p1_btn_CK),
         .p1_joy_state(p1_joy_CK),
-        .p2_btn_state(p2_btn_CK),  
-        .p2_joy_state(p2_joy_CK),
+        // .p2_btn_state(p2_btn_CK),  
+        // .p2_joy_state(p2_joy_CK),
+        .p2_btn_state(),  
+        .p2_joy_state(),
         .p3_btn_state(),
         .p4_btn_state(),  
         .busy(busy),    
@@ -1172,7 +1185,4 @@ mf_pllbase mp1 (
         .o_stb()
     );
     /*[ANALOGIZER_HOOK_END]*/
-
-
-
 endmodule

@@ -17,10 +17,9 @@ CRT, or the SNAC harnesses. Send analog video and SNAC problems to the
 
 Three things are ours, and they're the ones worth reporting here:
 
-- **Rally-X is single player.** Only player 1 reaches the game, so SNAC
-  player-2 assignments do nothing.
-- **Blank the Pocket Screen does nothing.** The core reads the setting out of
-  `analogizer.bin` and then never wires it to the video output.
+- **Rally-X is single player.** all Analogizer second player functionality was supressed (commented)
+- **Blank the Pocket Screen** The core reads the setting out of
+  `analogizer.bin` and then enable/disable blanking Pocket screen output based on this setting.
 - **Cart power is on for everyone.** The adapter draws power from the cartridge
   slot, so `cartridge_adapter` in `core.json` enables it for every user whether
   they own an adapter or not. The menu option does not gate it. Do not leave a
