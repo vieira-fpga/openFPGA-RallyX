@@ -1,5 +1,5 @@
 > [!NOTE]
-> 🤖 This core was developed with Claude Opus 5 (1M context) in Claude Code.
+> This core was developed with Claude Opus 5 (1M context) in Claude Code.
 
 # openFPGA-RallyX
 
@@ -44,9 +44,9 @@ CRC32, and writes `build/rallyx.rom` or `build/nrallyx.rom`. Either one comes ou
 at 21,280 bytes.
 
 That CRC32 check is worth having. Wrong or half-renamed parts still add up to
-exactly the right size, and the image you'd get boots to a black screen, which
-looks like a broken core rather than a bad zip, so the script rejects the file
-instead.
+exactly the right size, and the image they produce boots to a black screen.
+That looks like a broken core rather than a bad zip, so the script rejects the
+file instead.
 
 Copy the image to `Assets/rallyx/common/` on your SD card, creating that folder
 if it isn't there. Both games can live in it at once. The Pocket asks which one
@@ -62,21 +62,21 @@ no menu entry for it. The Pocket writes the score out when you quit the core,
 turn the Pocket off, or put it to sleep, and reads it back the next time you
 start the game.
 
-Each game gets its own file, named after the ROM you loaded and saved to
-`Saves/rallyx/common/` — `rallyx.rom` gives you `rallyx.sav`. Delete the file
-if you want the high score back at the factory default.
+Each game gets its own file in `Saves/rallyx/common/`, named after the ROM you
+loaded, so `rallyx.rom` gives you `rallyx.sav`. Delete the file to put the high
+score back to the factory default.
 
 ## Analogizer
 
 [Analogizer](https://github.com/RndMnkIII/Analogizer) is a cartridge-slot adapter
 that adds analog video output and SNAC controller support, and this core works
-with it. The full story is in [ANALOGIZER.md](ANALOGIZER.md): the video modes,
-which pads work and where the A/B switch has to sit for each one, where the
-config actually lives, and which problems to report here rather than upstream.
+with it. [ANALOGIZER.md](ANALOGIZER.md) covers the video modes, which pads work
+and where the A/B switch has to sit for each one, where the config lives, and
+which problems to report here rather than upstream.
 
-Before you plug anything in: the adapter draws its power from the cartridge slot,
-so this core switches that slot on for everybody, adapter or not. Don't leave a
-cartridge in the slot while this core is running.
+The adapter draws its power from the cartridge slot, so this core switches that
+slot on for everybody, adapter or not. Don't leave a cartridge in the slot while
+this core is running.
 
 ## Legal
 
