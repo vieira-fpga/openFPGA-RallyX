@@ -7,8 +7,8 @@
             "description": "Namco Rally-X and New Rally-X for Analogue Pocket & Analogizer",
             "author": "MorganVieira",
             "url": "https://github.com/morgan-vieira/openfpga-rallyx",
-            "version": "1.5.3",
-            "date_release": "2026-08-17"
+            "version": "1.5.4",
+            "date_release": "2026-08-19"
         },
         "framework": {
             "target_product": "Analogue Pocket",
