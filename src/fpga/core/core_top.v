@@ -1066,13 +1066,17 @@ mf_pllbase mp1 (
 //        clk_74a
 //    );
 
-    // synch_3 #(
-    // .WIDTH(32)
-    // ) p3b_s (
-    //     p1_joy_CK,
-    //     p1_joy,
-    //     clk_74a
-    // );
+    // p3b_s is named for its position in this block, not for a player. It
+    // carries p1_joy, player 1's analog stick. Deleting it alongside the P2
+    // and P4 synchronisers leaves p1_joy undriven, which reads as zero and
+    // jams UP and LEFT on for the analog SNAC controller types. Keep it.
+    synch_3 #(
+    .WIDTH(32)
+    ) p3b_s (
+        p1_joy_CK,
+        p1_joy,
+        clk_74a
+    );
         
     // synch_3 #(
     //     .WIDTH(32)
