@@ -74,9 +74,10 @@ with it. [ANALOGIZER.md](ANALOGIZER.md) covers the video modes, which pads work
 and where the A/B switch has to sit for each one, where the config lives, and
 which problems to report here rather than upstream.
 
-The adapter draws its power from the cartridge slot, so this core switches that
-slot on for everybody, adapter or not. Don't leave a cartridge in the slot while
-this core is running.
+> [!WARNING]
+> The adapter draws its power from the cartridge slot, so this core switches that
+> slot on for everybody, adapter or not. Don't leave a cartridge in the slot while
+> this core is running.
 
 ## Legal
 

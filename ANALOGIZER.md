@@ -17,7 +17,7 @@ CRT, or the SNAC harnesses. Send analog video and SNAC problems to the
 
 Three things are ours, and they're the ones worth reporting here:
 
-- **Rally-X is single player.** Only player 1 reaches the game, so the SNAC
+- **Rally-X is single player.** Only player 1 can play the game, so the SNAC
   player 2 assignments do nothing. The player 2 path came out of the core in
   1.5.4.
 - **Blank the Pocket Screen works.** Switch it on in `analogizer.bin` and the
