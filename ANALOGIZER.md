@@ -5,8 +5,8 @@ video output and SNAC controller support. This core supports it through
 RndMnkIII's [Analogizer](https://github.com/RndMnkIII/Analogizer) project, whose
 wiki is the authority on the adapter itself.
 
-Turn it on with **Enable Analogizer** in the Pocket menu. With it off, the core
-disables every Analogizer code path.
+Turn it on with **Analogizer** in the Pocket's Core Settings menu. With it off,
+the core disables every Analogizer code path.
 
 ## What we can and cannot answer
 
