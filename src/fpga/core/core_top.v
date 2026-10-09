@@ -613,6 +613,8 @@ always @(posedge clk_core_24576) if (pause_btn_rise) pause_toggle <= ~pause_togg
     // active-high game reset: held until ROMs are loaded AND host reset released
     wire game_reset = ~reset_n_s | ~download_done_s | dsw_reset;
 
+    // only Difficulty has a menu entry; coin, bonus and service keep these
+    // reset values until someone checks them against both ROMs (#2)
     reg  [7:0] dsw_coin  = 8'h00;
     reg  [7:0] dsw_diff  = 8'h18;
     reg  [7:0] dsw_bonus = 8'h04;
@@ -958,7 +960,7 @@ mf_pllbase mp1 (
     wire [3:0] snac_cont_assignment;
     wire       pocket_blank_screen;
 
-    wire analogizer_ena = ena_analogizer_s; //Setting from Pocket Menu 'Enable Analogizer'
+    wire analogizer_ena = ena_analogizer_s; //Setting from Pocket Menu 'Analogizer'
 
     //create aditional switch to blank Pocket screen.
     wire [23:0] video_rgb_rallyx;

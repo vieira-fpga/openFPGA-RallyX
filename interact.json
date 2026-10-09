@@ -3,43 +3,6 @@
         "magic": "APF_VER_1",
         "variables": [
             {
-                "name": "Enable Analogizer",
-                "id": 15,
-                "type": "list",
-                "enabled": true,
-                "persist": true,
-                "writeonly": true,
-                "address": "0xF2000000",
-                "defaultval": 0,
-                "mask": "0xFFFFFFFE",
-                "options": [
-                    {
-                        "name": "Off",
-                        "value": "0x0"
-                    },
-                    {
-                        "name": "On",
-                        "value": "0x1"
-                    }
-                ]
-            },
-            {
-                "name": "Coinage",
-                "id": 1,
-                "type": "list",
-                "enabled": false,
-                "persist": true,
-                "writeonly": true,
-                "address": "0x10000000",
-                "defaultval": 0,
-                "options": [
-                    { "value": "0x00", "name": "1 Coin / 1 Credit" },
-                    { "value": "0x40", "name": "1 Coin / 2 Credits" },
-                    { "value": "0x80", "name": "2 Coins / 1 Credit" },
-                    { "value": "0xC0", "name": "Free Play" }
-                ]
-            },
-            {
                 "name": "Difficulty",
                 "id": 2,
                 "type": "list",
@@ -60,31 +23,25 @@
                 ]
             },
             {
-                "name": "Bonus Life",
-                "id": 3,
+                "name": "Analogizer",
+                "id": 15,
                 "type": "list",
-                "enabled": false,
+                "enabled": true,
                 "persist": true,
                 "writeonly": true,
-                "address": "0x10020000",
+                "address": "0xF2000000",
                 "defaultval": 0,
+                "mask": "0xFFFFFFFE",
                 "options": [
-                    { "value": "0x04", "name": "Easy" },
-                    { "value": "0x02", "name": "Medium" },
-                    { "value": "0x00", "name": "Hard" }
+                    {
+                        "name": "Off",
+                        "value": "0x0"
+                    },
+                    {
+                        "name": "On",
+                        "value": "0x1"
+                    }
                 ]
-            },
-            {
-                "name": "Service Mode",
-                "id": 4,
-                "type": "check",
-                "enabled": false,
-                "persist": false,
-                "writeonly": true,
-                "address": "0x10030000",
-                "defaultval": 0,
-                "value": 1,
-                "value_off": 0
             }
         ],
         "messages": []
