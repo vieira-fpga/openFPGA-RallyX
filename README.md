@@ -66,6 +66,15 @@ Each game gets its own file in `Saves/rallyx/common/`, named after the ROM you
 loaded, so `rallyx.rom` gives you `rallyx.sav`. Delete the file to put the high
 score back to the factory default.
 
+### Difficulty
+
+Both games share one Difficulty menu, but they read it differently. Rally-X
+sets both the car count and the difficulty from it. New Rally-X only reads the
+car count, and only ever starts with 3 or 4 cars. Each option names what
+Rally-X does first, then the New Rally-X car count in brackets, so
+`2 Cars, Medium (NRX 4)` gives 2 cars on Medium in Rally-X and 4 cars in
+New Rally-X. The default gives 3 cars in both.
+
 ## Analogizer
 
 [Analogizer](https://github.com/RndMnkIII/Analogizer) is a cartridge-slot adapter
