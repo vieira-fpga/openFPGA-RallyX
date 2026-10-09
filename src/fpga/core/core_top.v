@@ -614,7 +614,7 @@ always @(posedge clk_core_24576) if (pause_btn_rise) pause_toggle <= ~pause_togg
     wire game_reset = ~reset_n_s | ~download_done_s | dsw_reset;
 
     reg  [7:0] dsw_coin  = 8'h00;
-    reg  [7:0] dsw_diff  = 8'h38;
+    reg  [7:0] dsw_diff  = 8'h18;
     reg  [7:0] dsw_bonus = 8'h04;
     reg  [7:0] dsw_serv  = 8'h00;
 
@@ -631,7 +631,7 @@ end
     wire [7:0] dsw_reg = dsw_coin | dsw_diff | dsw_bonus | dsw_serv;
     wire [7:0] dsw_s;
 synch_3 #(.WIDTH(8)) s_dsw (dsw_reg, dsw_s, clk_core_24576);
-    reg  [7:0]  dsw_s_d  = 8'h3C;
+    reg  [7:0]  dsw_s_d  = 8'h1C;
     reg  [15:0] dsw_hold = 16'h0;
 always @(posedge clk_core_24576) begin
     dsw_s_d <= dsw_s;

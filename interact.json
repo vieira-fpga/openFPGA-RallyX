@@ -43,20 +43,20 @@
                 "name": "Difficulty",
                 "id": 2,
                 "type": "list",
-                "enabled": false,
+                "enabled": true,
                 "persist": true,
                 "writeonly": true,
                 "address": "0x10010000",
                 "defaultval": 2,
                 "options": [
-                    { "value": "0x00", "name": "3 Cars, Hard" },
-                    { "value": "0x18", "name": "3 Cars, Medium" },
-                    { "value": "0x38", "name": "3 Cars, Easy" },
-                    { "value": "0x08", "name": "2 Cars, Hard" },
-                    { "value": "0x20", "name": "2 Cars, Medium" },
-                    { "value": "0x10", "name": "1 Car, Hard" },
-                    { "value": "0x28", "name": "1 Car, Medium" },
-                    { "value": "0x30", "name": "4 Cars, Easy" }
+                    { "value": "0x30", "name": "3 Cars, Easy (NRX 4)" },
+                    { "value": "0x38", "name": "2 Cars, Easy (NRX 3)" },
+                    { "value": "0x18", "name": "3 Cars, Medium (NRX 3)" },
+                    { "value": "0x20", "name": "2 Cars, Medium (NRX 4)" },
+                    { "value": "0x28", "name": "1 Car, Medium (NRX 3)" },
+                    { "value": "0x00", "name": "3 Cars, Hard (NRX 4)" },
+                    { "value": "0x08", "name": "2 Cars, Hard (NRX 3)" },
+                    { "value": "0x10", "name": "1 Car, Hard (NRX 4)" }
                 ]
             },
             {
