@@ -2,9 +2,9 @@
     <p>
         <a href="https://github.com/vieira-fpga" target="_blank">
             <picture>
-                <source media="(prefers-color-scheme: dark)" srcset="https://github.com/vieira-fpga/.github/raw/HEAD/.github/assets/logo-dark.svg" />
-                <source media="(prefers-color-scheme: light)" srcset="https://github.com/vieira-fpga/.github/raw/HEAD/.github/assets/logo-light.svg" />
-                <img height="100" src="https://github.com/vieira-fpga/.github/raw/HEAD/.github/assets/logo-light.svg" alt="Vieira FPGA" />
+                <source media="(prefers-color-scheme: dark)" srcset="https://github.com/vieira-fpga/.github/raw/HEAD/.github/assets/svg/logo-dark.svg" />
+                <source media="(prefers-color-scheme: light)" srcset="https://github.com/vieira-fpga/.github/raw/HEAD/.github/assets/svg/logo-light.svg" />
+                <img height="100" src="https://github.com/vieira-fpga/.github/raw/HEAD/.github/assets/svg/logo-light.svg" alt="Vieira FPGA" />
             </picture>
         </a>
         <br /> <br />
@@ -26,7 +26,7 @@ Rally-X and New Rally-X for the Analogue Pocket | By [Vieira FPGA](https://githu
 ___
 
 ## General TLDR
-Install the core with Pupdate or by hand, build a ROM image from your own MAME set with `tools/build_rom.py`, and copy it to `Assets/rallyx/common/`. The Pocket asks which game to load each time the core starts.
+Install the core with Pupdate or by hand. Pupdate can fetch the game ROMs too. Otherwise, build a ROM image from your own MAME set with `tools/build_rom.py` and copy it to `Assets/rallyx/common/`. The Pocket asks which game to load each time the core starts.
 
 ___
 
@@ -52,7 +52,9 @@ If you run an Analogizer adapter, Pupdate also writes its `analogizer.bin` confi
 Grab the [latest release](https://github.com/vieira-fpga/openFPGA-RallyX/releases/latest), unzip it, and merge `Cores`, `Platforms` and `Assets` into the root of your SD card. The zip already has the layout the Pocket expects, so there's nothing to rename or move once it's across.
 
 ## The Game ROM
-This part is the same either way. The core ships with no game data in it and never will, so you need a MAME set of your own: `rallyx.zip` for Rally-X, or `nrallyx.zip` for New Rally-X. Pupdate won't do this bit for you.
+The core ships with no game data in it and never will. Pupdate fetches `rallyx.rom` and `nrallyx.rom` into `Assets/rallyx/common/` for you, unless you've turned its asset downloads off. If Pupdate fetched them, skip the rest of this section.
+<br /> <br />
+Otherwise you need a MAME set of your own: `rallyx.zip` for Rally-X, or `nrallyx.zip` for New Rally-X.
 <br /> <br />
 The Pocket can't read a MAME zip, so `tools/build_rom.py` turns one into the single image the core loads:
 <br />
@@ -65,12 +67,14 @@ It works out which of the two sets you handed it, checks every part against its 
 <br /> <br />
 That CRC32 check is worth having. Wrong or half-renamed parts still add up to exactly the right size, and the image they produce boots to a black screen. That looks like a broken core rather than a bad zip, so the script rejects the file instead.
 <br /> <br />
-Copy the image to `Assets/rallyx/common/` on your SD card, creating that folder if it isn't there. Both games can live in it at once. The Pocket asks which one you want each time the core starts, and you can switch between them from the core menu while it's running.
+Copy the image to `Assets/rallyx/common/` on your SD card, creating that folder if it isn't there. Keep the name the script gave it, because the core finds each game by filename. Both games can live in the folder at once.
+<br /> <br />
+Each time the core starts, the Pocket lists `rallyx` and `nrallyx` to pick from. These are small files in `Assets/rallyx/MorganVieira.Rally-X/` that come with the core and point at the ROMs. You can switch games from the core menu while it's running.
 
 ## High Scores
 The core keeps your high score between sessions. There's nothing to set up and no menu entry for it. The Pocket writes the score out when you quit the core, turn the Pocket off, or put it to sleep, and reads it back the next time you start the game.
 <br /> <br />
-Each game gets its own file in `Saves/rallyx/common/`, named after the ROM you loaded, so `rallyx.rom` gives you `rallyx.sav`. Delete the file to put the high score back to the factory default.
+Each game gets its own file in `Saves/rallyx/common/`, named after the game you picked, so `rallyx` gives you `rallyx.sav`. Delete the file to put the high score back to the factory default.
 
 ## Difficulty
 Both games share one Difficulty menu, but they read it differently. Rally-X sets both the car count and the difficulty from it. New Rally-X only reads the car count, and only ever starts with 3 or 4 cars.

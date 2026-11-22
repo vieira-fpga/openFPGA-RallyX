@@ -1,0 +1,15 @@
+{
+    "instance": {
+        "magic": "APF_VER_1",
+        "data_slots": [
+            {
+                "id": 2,
+                "filename": "rallyx.rom"
+            },
+            {
+                "id": 1,
+                "filename": "rallyx.sav"
+            }
+        ]
+    }
+}

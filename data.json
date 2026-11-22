@@ -3,10 +3,19 @@
         "magic": "APF_VER_1",
         "data_slots": [
             {
-                "name": "Game ROM",
+                "name": "Game",
                 "id": 0,
                 "required": true,
-                "parameters": "0x081",
+                "parameters": "0x93",
+                "extensions": [
+                    "json"
+                ]
+            },
+            {
+                "name": "Game ROM",
+                "id": 2,
+                "required": true,
+                "parameters": "0x0",
                 "extensions": [
                     "rom"
                 ],
@@ -29,7 +38,7 @@
                 "name": "High Score",
                 "id": 1,
                 "required": false,
-                "parameters": "0x4",
+                "parameters": "0x0",
                 "extensions": [
                     "sav"
                 ],

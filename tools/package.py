@@ -70,6 +70,10 @@ def package(root, sd_root, make_zip):
     if plat_bin.is_file():
         copy_into(plat_bin, plat_img)
 
+    # The instance JSONs, one per game. Updaters such as pupdate read the ROM
+    # filenames out of them to fetch the ROMs.
+    shutil.copytree(dist / "assets", release / "Assets", dirs_exist_ok=True)
+
     ok(f"Core folder: Cores/{core_name}")
     ok(f"Bitstream:   {len(bitstream)} bytes")
 

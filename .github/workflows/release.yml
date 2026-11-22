@@ -56,8 +56,8 @@ jobs:
           echo "" >> CHANGELOG.md
           echo "### Install" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
-          echo "Unzip the \`Cores\` and \`Platforms\` folders to the root of your SD card." >> CHANGELOG.md
-          echo "ROMs are not included. Place your own \`rallyx.rom\` and/or \`nrallyx.rom\` (21,280 bytes each) in \`/Assets/rallyx/common/\`. The Pocket asks which one to load each time the core starts, and you can switch games from the core menu while it's running." >> CHANGELOG.md
+          echo "Unzip the \`Cores\`, \`Platforms\` and \`Assets\` folders to the root of your SD card." >> CHANGELOG.md
+          echo "ROMs are not included. Pupdate fetches them for you; otherwise place your own \`rallyx.rom\` and/or \`nrallyx.rom\` (21,280 bytes each) in \`/Assets/rallyx/common/\`. Keep those filenames, because the core finds each game by name. The Pocket asks which one to load each time the core starts, and you can switch games from the core menu while it's running." >> CHANGELOG.md
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
