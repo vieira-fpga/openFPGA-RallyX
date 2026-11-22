@@ -578,15 +578,16 @@ data_loader #(
 // ---- hold the game in reset while the game ROM loads ----
 // tracked in the clk_74a (bridge) domain, then synchronized into the game clock.
 //
-// The game ROM is slot 0, and it is the only slot that decides whether the game
-// may run. APF sends [0082] Data slot request write long after boot too: the
+// The game ROM is slot 2, and it is the only slot that decides whether the game
+// may run. Slot 0 is the instance JSON that names it, which the Pocket reads
+// itself. APF sends [0082] Data slot request write long after boot too: the
 // high-score slot is nonvolatile, so saving a score brings one with it. Gating
 // on every slot meant a save reset the running game, and the reset re-armed the
 // save and reset it again -- issue #8, a black screen and the power-on
-// self-test flickering forever. Reloading slot 0 to switch games must still
+// self-test flickering forever. Loading a new ROM to switch games must still
 // reset, so this watches the slot id rather than watching for the first boot.
 // Every other slot loads underneath a game that keeps running.
-    localparam [15:0] ROM_SLOT_ID = 16'd0;
+    localparam [15:0] ROM_SLOT_ID = 16'd2;
 
     reg  download_done = 1'b0;
 always @(posedge clk_74a) begin
