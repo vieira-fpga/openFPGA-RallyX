@@ -15,10 +15,6 @@ module pocket_i2s
     parameter         AUDIO_S = 0;
     localparam [20:0] CYCLE_48KHZ = 21'd122880 * 2;
 
-    assign I2S_MCLK = audio_mclk;
-    assign I2S_DAC  = audio_dac;
-    assign I2S_LRCK = audio_lrck;
-
     // Generate MCLK = 12.288mhz with fractional accumulator
     reg [21:0] audio_accum;
     reg        audio_mclk;
@@ -49,6 +45,11 @@ module pocket_i2s
     reg         audio_lrck;
     reg         audio_dac;
     reg         audio_nextsamp;
+
+    // After the declarations: Icarus 13 rejects a use before the declaration.
+    assign I2S_MCLK = audio_mclk;
+    assign I2S_DAC  = audio_dac;
+    assign I2S_LRCK = audio_lrck;
     always @(negedge audio_sclk) begin
         audio_nextsamp <= 0;
         // Output the next bit
