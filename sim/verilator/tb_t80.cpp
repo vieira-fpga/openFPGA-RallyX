@@ -19,6 +19,10 @@
 //        entry of the zexdoc/zexall test table, so tools/sim.py can spread a
 //        run across cores.
 //
+//    tb_t80 rallyx <program.bin> [--test N]
+//        The CPU test ROM, roms/cpu/zexall.s, on the Rally-X memory map. It
+//        prints the screen the ROM leaves behind.
+//
 //    tb_t80 tap <z80test.tap>
 //        Patrik Rak's z80test under a three-routine stand-in for the
 //        Spectrum ROM. Also CRCs against a real Zilog Z80, and reaches what
@@ -1192,9 +1196,107 @@ int run_spectrum(const char* tap) {
     return 1;
 }
 
+//----------------------------------------------------------------------------
+//  The CPU test ROM, on the Rally-X memory map
+//----------------------------------------------------------------------------
+
+// roms/cpu/zexall.s as the board runs it: program ROM at $0000-$3FFF, which
+// ignores writes, and controls at $A000-$AFFF reading $FF, nothing held. The
+// rest is RAM. The screen is the playfield tile RAM at $8400, 32 tiles
+// square; the ROM scrolls it so tile rows 2-29 and columns 0-27 show.
+//
+// The ROM keeps two words for tools: $0003 points at its test table, so
+// --test N can keep one entry, and $0005 is the loop it idles in at the end.
+const unsigned kRomSize = 0x4000;
+const unsigned kPlayfield = 0x8400;
+const uint8_t kBlankTile = 0x40;
+
+std::string playfield_row(const uint8_t* mem, unsigned row) {
+    std::string text;
+    for (unsigned col = 0; col < 28; col++) {
+        uint8_t tile = mem[kPlayfield + (row + 2) * 32 + col];
+        text += tile == kBlankTile ? ' ' : (tile >= 0x20 && tile < 0x7F ? (char)tile : '?');
+    }
+    while (!text.empty() && text.back() == ' ') {
+        text.pop_back();
+    }
+    return text;
+}
+
+int run_rallyx(const char* rom, int only_test) {
+    static uint8_t mem[65536];
+    FILE* f = fopen(rom, "rb");
+    if (!f) {
+        printf("FAIL  %s not found. Run: python tools/build_test_rom.py\n", rom);
+        return 1;
+    }
+    size_t loaded = fread(mem, 1, kRomSize, f);
+    fclose(f);
+    if (loaded == 0) {
+        printf("FAIL  %s is empty\n", rom);
+        return 1;
+    }
+
+    unsigned table = mem[3] | mem[4] << 8;
+    unsigned idle = mem[5] | mem[6] << 8;
+    if (only_test >= 0) {
+        int count = 0;
+        while (mem[table + count * 2] || mem[table + count * 2 + 1]) {
+            count++;
+        }
+        if (only_test >= count) {
+            printf("FAIL  %s has no test %d\n", rom, only_test);
+            return 1;
+        }
+        mem[table] = mem[table + only_test * 2];
+        mem[table + 1] = mem[table + only_test * 2 + 1];
+        mem[table + 2] = 0;
+        mem[table + 3] = 0;
+    }
+
+    Cpu cpu;
+    cpu.reset();
+    uint8_t data = mem[0];
+    bool finished = false;
+    const uint64_t limit = 60000000000ull;
+
+    while (!finished && cpu.ticks() < limit) {
+        Pins pins = cpu.step(data);
+        if (pins.write && pins.addr >= kRomSize) {
+            mem[pins.addr] = pins.data;
+        }
+        finished = pins.fetch && pins.addr == idle;
+        data = (pins.addr & 0xF000) == 0xA000 ? 0xFF : mem[pins.addr];
+    }
+
+    for (unsigned row = 0; row < 28; row++) {
+        printf("  |%s\n", playfield_row(mem, row).c_str());
+    }
+    printf("\n  info  %llu T-states\n", (unsigned long long)cpu.ticks());
+
+    if (!finished) {
+        printf("FAIL  the ROM did not reach its idle loop\n");
+        return 1;
+    }
+    std::string counts = playfield_row(mem, 21);
+    if (counts.find("FAILED 00") == std::string::npos) {
+        printf("FAIL  the ROM reported failures: %s\n", counts.c_str());
+        return 1;
+    }
+    printf("PASS  CPU test ROM: %s\n", counts.c_str());
+    return 0;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
+    if (argc == 3 && strcmp(argv[1], "rallyx") == 0) {
+        return run_rallyx(argv[2], -1);
+    }
+    if (argc == 5 && strcmp(argv[1], "rallyx") == 0 &&
+        strcmp(argv[3], "--test") == 0) {
+        return run_rallyx(argv[2], atoi(argv[4]));
+    }
     if (argc == 3 && strcmp(argv[1], "tap") == 0) {
         return run_spectrum(argv[2]);
     }
@@ -1212,6 +1314,7 @@ int main(int argc, char** argv) {
     fprintf(stderr,
             "usage: tb_t80 fuse <tests.in> <tests.expected>\n"
             "       tb_t80 cpm <image> [--test N]\n"
-            "       tb_t80 tap <z80test.tap>\n");
+            "       tb_t80 tap <z80test.tap>\n"
+            "       tb_t80 rallyx <program.bin> [--test N]\n");
     return 2;
 }

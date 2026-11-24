@@ -10,7 +10,7 @@ import sys
 import tempfile
 from pathlib import Path
 
-from _common import REPO_ROOT, Fail, ok, run, step
+from _common import REPO_ROOT, Fail, ok, run, skip, step
 
 # Modules outside src/fpga/rtl/ that testbenches reach into. Listed explicitly
 # rather than globbed: core_top.v pulls in the PLL and the Analogizer, which
@@ -80,6 +80,9 @@ EXERCISERS = ".repos/z80-exercisers/roms"
 Z80TEST = ".repos/z80test/z80test-1.2a"
 # z80ccfscr draws a picture to compare by eye, so it is not run.
 Z80TEST_TAPES = ("z80full", "z80doc", "z80flags", "z80docflags", "z80memptr", "z80ccf")
+# The CPU test ROM, built by tools/build_test_rom.py. Its word at $0003 points
+# at its test table.
+CPU_TEST_ROM = "build/test-roms/zexall.bin"
 
 
 def find_iverilog(override):
@@ -363,6 +366,20 @@ def t80_runs(root, exercisers):
             runs.append(
                 (f"{name} {index:2d}", ["cpm", str(image), "--test", str(index)])
             )
+
+    rom = root / CPU_TEST_ROM
+    if not rom.is_file():
+        skip(f"{CPU_TEST_ROM} not built, so the CPU test ROM is not run")
+        return runs
+    data = rom.read_bytes()
+    table = data[3] | data[4] << 8
+    count = 0
+    while data[table + 2 * count] or data[table + 2 * count + 1]:
+        count += 1
+    for index in range(count):
+        runs.append(
+            (f"test ROM {index:2d}", ["rallyx", str(rom), "--test", str(index)])
+        )
     return runs
 
 
