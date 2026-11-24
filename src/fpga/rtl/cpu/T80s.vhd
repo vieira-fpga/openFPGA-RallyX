@@ -170,7 +170,9 @@ begin
 						IORQ_n <= not IORQ;
 						MREQ_n <= IORQ;
 					end if;
-					if T2Write = 0 then
+					-- T2Write only delays memory writes. An I/O write drives WR
+					-- with IORQ from T2, as on the Z80 (Rally-X local change).
+					if T2Write = 0 and IORQ = '0' then
 						if TState = 2 and Write = '1' then
 							WR_n <= '0';
 							IORQ_n <= not IORQ;
