@@ -33,7 +33,7 @@ ___
 ## Introduction
 <sup><i>The core is licensed under the GNU GPL v3, see LICENSE for more information.</i>
 <br />
-Ported by <a href="https://github.com/morgan-vieira">Morgan Vieira</a> for <a href="https://github.com/vieira-fpga">Vieira FPGA</a> with Claude Opus 5 (1M context) in Claude Code
+Ported by <a href="https://github.com/morgan-vieira">Morgan Vieira</a> for <a href="https://github.com/vieira-fpga">Vieira FPGA</a> with Claude Opus 5 (1M context) and Claude Opus 5.5 in Claude Code
 </sup>
 
 Rally-X is Namco's 1980 maze-chase arcade game. You drive a car through a scrolling maze and collect every flag while enemy cars chase you. A smoke screen holds them off for a moment, and a radar shows where the flags and the chasers are. New Rally-X followed in 1981.
@@ -95,5 +95,9 @@ The authors, contributors, and maintainers of this core are in no way associated
 ## Credits
 - Morgan Vieira (Analogue Pocket port) - [GitHub](https://github.com/morgan-vieira) | [X](https://x.com/morganvieira)
 - MiSTer-X (Rally-X arcade hardware) - [MiSTer core](https://github.com/MiSTer-devel/Arcade-RallyX_MiSTer)
-- Daniel Wallner (T80 Z80 CPU core)
+- Daniel Wallner (T80 Z80 CPU core), with fixes by MikeJ, TobiFlex, Sorgelig and the ZX Spectrum core's contributors - [MiSTer ZX Spectrum core](https://github.com/MiSTer-devel/ZX-Spectrum_MISTer)
+- Frank D. Cringle and J.G. Harston (zexdoc and zexall Z80 exercisers, and the CPU test ROM built from zexall)
+- Patrik Rak (z80test Z80 tests) - [GitHub](https://github.com/raxoft/z80test)
+- The Fuse emulator project (Z80 core tests) - [Fuse](https://fuse-emulator.sourceforge.net/)
+- David Banks and TonyB (Z80 undocumented flag measurements) - [Z80Decoder wiki](https://github.com/hoglet67/Z80Decoder/wiki/Undocumented-Flags)
 - RndMnkIII (Analogizer) - [GitHub](https://github.com/RndMnkIII/Analogizer)

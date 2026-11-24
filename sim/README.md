@@ -27,6 +27,7 @@ what it measured rather than just a verdict — the numbers are the point.
 | `tb_t80_prefixed` | T-states for the CB/ED/DD/FD instructions the game uses — LDIR 21/16, IX/IY, `DD CB` |
 | `tb_t80_interrupt` | Mode 0 interrupt acknowledge: the EI shadow, the vector taken off the bus, RST 30h, 13 T-states |
 | `tb_t80_exerciser` | T80's actual results and flags, against prelim.com — and zexdoc/zexall on demand |
+| `tb_t80` | T80 compiled with Verilator: FUSE's per-opcode registers, memory and bus-cycle timing, prelim; with `--exercisers`, z80test, zexdoc, zexall and the CPU test ROM |
 
 ## Two things you need to know
 
@@ -42,50 +43,64 @@ is missing the runner skips it and says so rather than failing. The Verilog
 benches still use the inert `T80s` in `stubs.v` — they measure the glue around
 the CPU, not the CPU.
 
-Three GHDL flags are load-bearing: `--std=93` (T80 is VHDL-93), `-fsynopsys`
-(its non-standard IEEE packages), and `--syn-binding`. Without the last one
-GHDL refuses to bind `T80` inside `T80s` — the component is declared in
-`T80_Pack` rather than in the architecture, and GHDL's strict default-binding
-rule will not resolve that. The symptom is a silent `instance "u0" of component
-"T80" is not bound` warning and a CPU that never executes anything.
+Four GHDL flags are load-bearing: `--std=93` (T80 is VHDL-93), `-fsynopsys`
+(its non-standard IEEE packages), `-fexplicit` (it compares vectors with both
+`std_logic_1164` and `std_logic_unsigned` in scope), and `--syn-binding`.
+Without the last one GHDL refuses to bind `T80` inside `T80s` — the component is
+declared in `T80_Pack` rather than in the architecture, and GHDL's strict
+default-binding rule will not resolve that. The symptom is a silent `instance
+"u0" of component "T80" is not bound` warning and a CPU that never executes
+anything.
 
-**The vendored T80 has one local timing correction.** Its original microcode
-gave unconditional `RET` a five-state opcode-fetch cycle, making the instruction
-take 11 T-states. The Z80 uses the normal four-state fetch and takes 10. The
-local change corrects that fetch while leaving conditional returns alone: a
-not-taken `RET cc` takes 5 T-states and a taken one takes 11. The timing bench
-checks all three paths as hard failures.
+**Where T80 comes from.** `src/fpga/rtl/cpu/` is the T80 that
+MiSTer-devel/ZX-Spectrum_MISTer maintains (`rtl/T80` at `af0e672`), not the 2002
+release 0247 the MiSTer Rally-X core carried. Against FUSE's tests, 0247 got 532
+of 1352 cases wrong. Three local changes sit on top, each marked in the file it
+touches:
 
-**The CPU is tested for answers, not just for timing.** `tb_t80_timing` proves
-T80 spends the right number of clocks per instruction; it says nothing about
-whether the instruction computed the right result, and it covers unprefixed
-opcodes only. A census of `rallyx.rom` says that is the smaller half: the game
-executes 163 distinct unprefixed opcodes and 708 prefixed sites — `LDIR`, `NEG`,
-`SBC HL`, IX/IY loads and arithmetic, `DD CB` bit operations.
+- `T80.vhd`: SCF and CCF take YF/XF from whether the previous instruction wrote
+  F, not from whether F changed value. z80ccf failed 33 tests without it.
+- `T80.vhd`: in interrupt mode 0, a 00 on the bus runs as NOP. T80's microcode
+  took it for the start of its IM 2 sequence.
+- `T80s.vhd`: an I/O write drives WR with IORQ from T2. `T2Write => 0` holds WR
+  back to T3, which suits memory writes but put I/O writes two clocks late.
 
-`tb_t80_exerciser` covers the rest by running the canonical Z80 exercisers under
-a minimal CP/M rather than by inventing expectations. Fetch them first:
+**T80 against outside references.** GHDL runs T80 at roughly 100,000 T-states
+per second, too slow for anything but prelim. `tb_t80` has GHDL synthesise T80
+to a Verilog netlist and Verilator compile that, then `sim/verilator/tb_t80.cpp`
+drives it from the pins at a few million T-states per second. It needs GHDL and
+Verilator; `tools/sim.py` looks for both in MSYS2's `ucrt64`. Fetch the
+references first:
 
 ```
+python tools/sync.py --repo fuse
 python tools/sync.py --repo z80-exercisers
+python tools/sync.py --repo z80test
 ```
 
-Without them the bench reports a skip and passes. `prelim.com` is the default and
-finishes in 9,972 T-states, so it stays in the normal suite. Frank Cringle's
-exerciser is the thorough one and is opt-in:
+Every run includes FUSE's Z80 core tests and prelim, under a minute together.
+FUSE gives each opcode a starting state and expects the T-state count, the final
+registers, the memory, and the T-state of every bus cycle. All 1355 cases a Z80
+can reach pass; the one skipped starts with IFF1 set and IFF2 clear. Two of
+FUSE's expectations are out of date, and the harness corrects them where it
+says why: FUSE skips the displacement read of a JR cc or DJNZ that is not taken,
+and it predates David Banks's measurements of the flags while a block
+instruction repeats.
+
+The long references are opt-in:
 
 ```
-python tools/sim.py --test t80_exerciser \
-    --image .repos/z80-exercisers/roms/zexdoc.cim
+python tools/sim.py --test tb_t80 --exercisers
 ```
 
-Budget for it. GHDL's mcode backend runs this design at roughly 98,000 T-states
-per second, so zexdoc is an overnight job, not a pre-commit check —
-`--max-mcycles` bounds a shorter look, in millions of T-states. It prints a
-heartbeat every 250M so a long run is visibly alive, and `tools/sim.py` streams
-GHDL's output instead of buffering it, so an interrupted run still leaves its
-progress on screen. The exerciser CRCs come from real hardware, which is the
-point: they do not depend on this repository's reading of the datasheet.
+That adds Patrik Rak's z80test (z80full, z80doc, z80flags, z80docflags,
+z80memptr, z80ccf), every entry of Frank Cringle's zexdoc and zexall, and the
+CPU test ROM, spread across every core. Their CRCs come from real Zilog Z80s, so
+they do not depend on this repository's reading of the datasheet; z80test also
+reaches MEMPTR and SCF/CCF, which zex does not. Budget an afternoon: one
+entry, `aluop a,<b,c,d,e,h,l,(hl),a>`, is 20 billion T-states in each of
+zexdoc, zexall and the test ROM, two to three hours on a core of its own. On a
+machine with a core per entry, everything else is done inside the first hour.
 
 `LINEBUF` is the better case: it wraps an `altsyncram` megafunction, and
 `tools/sim.py` compiles Quartus's own simulation model
@@ -106,7 +121,6 @@ that model cannot be found does it fall back to the behavioural stand-in in
   behaviour is protocol, not clock timing.
 - `mf_pllbase` — a hard PLL; its output frequencies are a fitter constraint,
   checked by the Quartus compile rather than by simulation.
-- Instruction timing outside the opcodes the two benches name. `tb_t80_timing`
-  and `tb_t80_prefixed` between them measure 63 instructions chosen from what
-  `rallyx.rom` executes, not the whole instruction set. Results and flags are
-  the broad net — that is what `tb_t80_exerciser` is for.
+- T80 inside the board. `tb_t80` drives the CPU alone, and the Verilog
+  benches stub it out, so nothing simulates the game's own code on the real
+  CPU. The CPU test ROM on the Pocket is that check.
