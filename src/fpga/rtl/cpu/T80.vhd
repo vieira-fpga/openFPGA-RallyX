@@ -1,4 +1,9 @@
 --------------------------------------------------------------------------------
+-- Rally-X local change, on top of MiSTer-devel/ZX-Spectrum_MISTer af0e672:
+--  SCF/CCF take YF/XF from whether the previous instruction wrote F, not from
+--  whether F changed value, so an instruction that rewrites the same flags
+--  still counts. Passes Patrik Rak's z80ccf.
+--
 -- ****
 -- T80(c) core. Attempt to finish all undocumented features and provide
 --              accurate timings.
@@ -190,10 +195,11 @@ architecture rtl of T80 is
 	signal IncDecZ              : std_logic;
 	signal last_B               : std_logic_vector(7 downto 0);
 
-	-- Q register for Zilog SCF/CCF undocumented flag behavior
-	-- Captures F[5,3] (YF,XF) after flag-modifying instructions
-	signal Q_reg                : std_logic_vector(7 downto 0);
-	signal F_last               : std_logic_vector(7 downto 0);
+	-- Zilog SCF/CCF undocumented YF/XF: whether the previous instruction
+	-- wrote F, whatever value it wrote. POP AF and EX AF,AF' do not count, and
+	-- a DD or FD prefix counts as an instruction that wrote nothing.
+	signal F_Wr_Prev            : std_logic;
+	signal F_Wr_Cur             : std_logic;
 
 	-- ALU signals
 	signal BusB                 : std_logic_vector(7 downto 0);
@@ -396,6 +402,7 @@ begin
 		variable ioq : std_logic_vector(8 downto 0);
 		variable temp_c : unsigned(8 downto 0);
 		variable temp_h : unsigned(4 downto 0);
+		variable fw : std_logic;  -- F is written on this edge
 	begin
 		if RESET_n = '0' then
 			PC <= (others => '0');  -- Program Counter
@@ -432,8 +439,8 @@ begin
 			PreserveC_r <= '0';
 			XY_Ind <= '0';
 			I_RXDD <= '0';
-			Q_reg <= (others => '0');
-			F_last <= (others => '1');
+			F_Wr_Prev <= '0';
+			F_Wr_Cur <= '0';
 
 		elsif rising_edge(CLK_n) then
 
@@ -450,6 +457,7 @@ begin
 				IStatus <= DIR(209 downto 208);
 
 			elsif ClkEn = '1' then
+				fw := '0';
 				ALU_Op_r <= "0000";
 				Save_ALU_r <= '0';
 				Read_To_Reg_r <= "00000";
@@ -463,6 +471,7 @@ begin
 					F(Flag_N) <= '0';
 					F(Flag_H) <= temp_h(4);
 					F(Flag_C) <= temp_c(8);
+					fw := '1';
 				end if;
 
 				if ADDSPdd = '1' and TState = 1 then
@@ -472,6 +481,7 @@ begin
 					F(Flag_N) <= '0';
 					F(Flag_H) <= temp_h(4);
 					F(Flag_C) <= temp_c(8);
+					fw := '1';
 				end if;
 
 				if Mode = 3 then
@@ -650,18 +660,21 @@ begin
 								ACC <= not ACC;
 								F(Flag_H) <= '1';
 								F(Flag_N) <= '1';
+								fw := '1';
 							end if;
 							if I_CCF = '1' then
 								-- CCF
 								F(Flag_C) <= not F(Flag_C);
 								F(Flag_H) <= '0';
 								F(Flag_N) <= '0';
+								fw := '1';
 							end if;
 							if I_SCF = '1' then
 								-- SCF
 								F(Flag_C) <= '1';
 								F(Flag_H) <= '0';
 								F(Flag_N) <= '0';
+								fw := '1';
 							end if;
 						else
 							if I_CPL = '1' then
@@ -671,28 +684,27 @@ begin
 								F(Flag_H) <= '1';
 								F(Flag_X) <= not ACC(3);
 								F(Flag_N) <= '1';
+								fw := '1';
 							end if;
+							-- CCF and SCF on the Zilog Z80: YF/XF = (A | (F & ~Q)) & $28,
+							-- where Q is F & $28 if the previous instruction wrote F and
+							-- 0 otherwise. F has not changed since then, so F & ~Q is F
+							-- when F_Wr_Prev is clear and 0 when it is set.
 							if I_CCF = '1' then
-								-- CCF: Zilog Z80 behavior
-								-- Undocumented YF/XF: (A | (F & ~Q)) & 0x28
 								F(Flag_C) <= not F(Flag_C);
-								F(Flag_Y) <= ACC(5) or (F(Flag_Y) and not Q_reg(Flag_Y));
+								F(Flag_Y) <= ACC(5) or (F(Flag_Y) and not F_Wr_Prev);
 								F(Flag_H) <= F(Flag_C);
-								F(Flag_X) <= ACC(3) or (F(Flag_X) and not Q_reg(Flag_X));
+								F(Flag_X) <= ACC(3) or (F(Flag_X) and not F_Wr_Prev);
 								F(Flag_N) <= '0';
-								Q_reg(Flag_Y) <= ACC(5) or (F(Flag_Y) and not Q_reg(Flag_Y));
-								Q_reg(Flag_X) <= ACC(3) or (F(Flag_X) and not Q_reg(Flag_X));
+								fw := '1';
 							end if;
 							if I_SCF = '1' then
-								-- SCF: Zilog Z80 behavior
-								-- Undocumented YF/XF: (A | (F & ~Q)) & 0x28
 								F(Flag_C) <= '1';
-								F(Flag_Y) <= ACC(5) or (F(Flag_Y) and not Q_reg(Flag_Y));
+								F(Flag_Y) <= ACC(5) or (F(Flag_Y) and not F_Wr_Prev);
 								F(Flag_H) <= '0';
-								F(Flag_X) <= ACC(3) or (F(Flag_X) and not Q_reg(Flag_X));
+								F(Flag_X) <= ACC(3) or (F(Flag_X) and not F_Wr_Prev);
 								F(Flag_N) <= '0';
-								Q_reg(Flag_Y) <= ACC(5) or (F(Flag_Y) and not Q_reg(Flag_Y));
-								Q_reg(Flag_X) <= ACC(3) or (F(Flag_X) and not Q_reg(Flag_X));
+								fw := '1';
 							end if;
 						end if;
 					end if;
@@ -705,6 +717,7 @@ begin
 						else
 							ioq := ('0' & DI_Reg) + ('0' & std_logic_vector(ID16(7 downto 0)));
 						end if;
+						fw := '1';
 						F(Flag_N) <= DI_Reg(7);
 						F(Flag_C) <= ioq(8);
 						F(Flag_H) <= ioq(8);
@@ -729,6 +742,7 @@ begin
 							WZ <= std_logic_vector(PC)-"1";
 							F(Flag_X) <= pc_tmp(11);
 							F(Flag_Y) <= pc_tmp(13);
+							fw := '1';
 							if BTR_r2 = '1' then
 								-- INIR/INDR/OTIR/OTDR repeat: adjust HF and PF
 								-- balu = B-1 if CF&NF, B+1 if CF&!NF, else B
@@ -815,6 +829,7 @@ begin
 							F(Flag_H) <= '0';
 							F(Flag_X) <= I(3);
 							F(Flag_N) <= '0';
+							fw := '1';
 
 
 						when "01" =>
@@ -832,6 +847,7 @@ begin
 							F(Flag_H) <= '0';
 							F(Flag_X) <= R(3);
 							F(Flag_N) <= '0';
+							fw := '1';
 
 						when "10" =>
 							I <= ACC;
@@ -842,6 +858,10 @@ begin
 				end if;
 
 				if (I_DJNZ = '0' and Save_ALU_r = '1') or ALU_Op_r = "1001" then
+					-- SET and RES pass F through the ALU unchanged.
+					if ALU_Op_r /= "1010" and ALU_Op_r /= "1011" then
+						fw := '1';
+					end if;
 					if Mode = 3 then
 						F(6) <= F_Out(6);
 						F(5) <= F_Out(5);
@@ -857,6 +877,7 @@ begin
 					end if;
 				end if;
 				if T_Res = '1' and I_INRC = '1' then
+					fw := '1';
 					F(Flag_H) <= '0';
 					F(Flag_N) <= '0';
 					F(Flag_X) <= DI_Reg(3);
@@ -897,17 +918,20 @@ begin
 				end if;
 
 				if TState = 1 and I_BT = '1' then
+					fw := '1';
 					F(Flag_X) <= ALU_Q(3);
 					F(Flag_Y) <= ALU_Q(1);
 					F(Flag_H) <= '0';
 					F(Flag_N) <= '0';
 				end if;
 				if TState = 1 and I_BC = '1' then
+					fw := '1';
 					n := ALU_Q - ("0000000" & F_Out(Flag_H));
 					F(Flag_X) <= n(3);
 					F(Flag_Y) <= n(1);
 				end if;
 				if I_BC = '1' or I_BT = '1' then
+					fw := '1';
 					F(Flag_P) <= IncDecZ;
 				end if;
 
@@ -936,21 +960,20 @@ begin
 					end if;
 				end if;
 
-				-- Q register update for Zilog SCF/CCF behavior
-				-- At end of instruction: if flags changed, Q = F & 0x28
-				-- If flags didn't change and not SCF/CCF, Q = 0
-				-- SCF/CCF update Q internally, so skip them here
-				if T_Res = '1' and Mode /= 3 then
-					if I_SCF = '0' and I_CCF = '0' then
-						if F /= F_last then
-							Q_reg(Flag_Y) <= F(Flag_Y);
-							Q_reg(Flag_X) <= F(Flag_X);
-						else
-							Q_reg(Flag_Y) <= '0';
-							Q_reg(Flag_X) <= '0';
-						end if;
+				-- Credit each F write to the instruction that made it. In T1 and
+				-- T2 of an opcode fetch IR still holds the previous instruction,
+				-- and its ALU result lands here, so those writes are its. The
+				-- rest belong to the instruction running, which hands its
+				-- verdict to F_Wr_Prev when it ends.
+				if MCycle = "001" and (TState = 1 or TState = 2) then
+					if fw = '1' then
+						F_Wr_Prev <= '1';
 					end if;
-					F_last <= F;
+				elsif T_Res = '1' then
+					F_Wr_Prev <= F_Wr_Cur or fw;
+					F_Wr_Cur <= '0';
+				elsif fw = '1' then
+					F_Wr_Cur <= '1';
 				end if;
 			end if;
 		end if;
