@@ -146,7 +146,7 @@ begin
     cpu : entity work.T80s
         generic map (Mode => 0, T2Write => 0, IOWait => 1)
         port map (
-            RESET_n => reset_n, CLK_n => clk, WAIT_n => '1',
+            RESET_n => reset_n, CLK => clk, WAIT_n => '1',
             INT_n   => '1', NMI_n => '1', BUSRQ_n => '1',
             DI      => di,
             M1_n    => m1_n, MREQ_n => mreq_n, IORQ_n => iorq_n,

@@ -128,8 +128,10 @@ wire [7:0]	irqv  = ( (~m1) & (~ie) ) ? intv : 8'h00;
 wire [7:0]	idt   = romd | ramd | irqv | vidd | inpd;
 
 
-T80s z80(
-	.RESET_n(~RESET), .CLK_n(CCLK),
+// T2Write(0): WR_n asserts in T3, the bus timing this board's RAM glue expects.
+// OUT0(0): OUT (C),0 drives 0, as the NMOS Z80 on the Namco board does.
+T80s #(.T2Write(0)) z80(
+	.RESET_n(~RESET), .CLK(CCLK), .CEN(1'b1), .OUT0(1'b0),
 	.WAIT_n(~pause), .INT_n(irq_n), .NMI_n(1'b1), .BUSRQ_n(1'b1), .DI(idt),
 	.M1_n(m1), .MREQ_n(me), .IORQ_n(ie), .RD_n(rd), .WR_n(wr), .RFSH_n(rf), .HALT_n(), .BUSAK_n(),
 	.A(ad),
