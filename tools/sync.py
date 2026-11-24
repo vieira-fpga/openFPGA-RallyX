@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 import argparse
+import io
+import shutil
 import subprocess
+import urllib.request
+import zipfile
 from pathlib import Path
 from typing import NamedTuple
 
@@ -11,6 +15,8 @@ class Repo(NamedTuple):
     name: str
     url: str
     ref: str | None = None
+    # A release .zip to unpack instead of a git repository to clone.
+    archive: bool = False
 
 
 REFERENCE_REPOS = (
@@ -32,6 +38,19 @@ REFERENCE_REPOS = (
     # runs against T80. Fetched rather than committed, like everything else
     # under .repos/.
     Repo("z80-exercisers", "https://github.com/superzazu/z80.git"),
+    # Not a reference core either. The Fuse emulator's z80/tests/tests.in and
+    # tests.expected give, per opcode, the T-state count, the final registers,
+    # and the T-state of every bus cycle. sim/verilator/tb_t80.cpp runs them.
+    Repo("fuse", "https://git.code.sf.net/p/fuse-emulator/fuse"),
+    # Patrik Rak's z80test: z80full, z80doc, z80flags, z80memptr and z80ccf,
+    # with CRCs taken from a real Zilog Z80, including MEMPTR and SCF/CCF.
+    # The repository holds only sources, so this takes the release's
+    # assembled .tap files.
+    Repo(
+        "z80test",
+        "https://github.com/raxoft/z80test/releases/download/v1.2a/z80test-1.2a.zip",
+        archive=True,
+    ),
 )
 
 
@@ -69,6 +88,22 @@ def select(name):
     return targets
 
 
+def unpack(repo, dest, dry_run):
+    step(f"{repo.name}: download -> {repo.url}")
+    if dry_run:
+        skip(f"unzip {repo.url} into {dest}")
+        return
+    try:
+        with urllib.request.urlopen(repo.url, timeout=60) as response:
+            data = response.read()
+    except OSError as exc:
+        raise Fail(f"download failed: {repo.url} ({exc})") from exc
+    if dest.exists():
+        shutil.rmtree(dest)
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        archive.extractall(dest)
+
+
 def sync(root, name, dry_run):
     targets = select(name)
     repos_dir = root / ".repos"
@@ -81,7 +116,9 @@ def sync(root, name, dry_run):
 
     for repo in targets:
         dest = repos_dir / repo.name
-        if (dest / ".git").is_dir():
+        if repo.archive:
+            unpack(repo, dest, dry_run)
+        elif (dest / ".git").is_dir():
             ref = repo.ref or default_branch(dest)
             step(f"{repo.name}: update -> {ref}")
             git(["-C", dest, "fetch", "--depth", "1", "origin", ref], dry_run)

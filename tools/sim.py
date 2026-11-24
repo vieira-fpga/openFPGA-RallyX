@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import concurrent.futures
 import glob
 import os
 import re
@@ -62,6 +63,23 @@ T80_SOURCES = (
 # strict default binding refuses to resolve.
 GHDL_FLAGS = ("--std=93", "-fsynopsys", "-fexplicit")
 GHDL_ELAB_FLAGS = ("--syn-binding",)
+
+# T80 at compiled speed: GHDL synthesises the VHDL to a Verilog netlist,
+# Verilator turns that into C++, and sim/verilator/tb_t80.cpp drives it. This
+# runs verilator_bin, Verilator's compiled half, and g++ directly rather than
+# the `verilator` wrapper, whose generated make loses TMP on Windows when an
+# MSYS2 make starts under another shell's runtime, and then cannot compile.
+VERILATOR_GLOBS = (
+    "C:/msys64/ucrt64/bin",
+    "C:/msys64/mingw64/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+)
+FUSE_TESTS = ".repos/fuse/z80/tests"
+EXERCISERS = ".repos/z80-exercisers/roms"
+Z80TEST = ".repos/z80test/z80test-1.2a"
+# z80ccfscr draws a picture to compare by eye, so it is not run.
+Z80TEST_TAPES = ("z80full", "z80doc", "z80flags", "z80docflags", "z80memptr", "z80ccf")
 
 
 def find_iverilog(override):
@@ -251,9 +269,144 @@ def run_one_vhdl(ghdl, bench, root, workdir, image=None, max_cycles=None):
     return proc.returncode == 0 and not saw_fail
 
 
+def find_verilator():
+    exe = ".exe" if os.name == "nt" else ""
+    for pattern in VERILATOR_GLOBS:
+        for bindir in glob.glob(os.path.expanduser(pattern)):
+            verilator = Path(bindir) / f"verilator_bin{exe}"
+            gxx = Path(bindir) / f"g++{exe}"
+            root = Path(bindir).parent / "share" / "verilator"
+            if verilator.is_file() and gxx.is_file() and root.is_dir():
+                return verilator, gxx, root
+    return None
+
+
+def build_t80_model(ghdl, verilator, root, workdir):
+    verilator_bin, gxx, verilator_root = verilator
+    lib = workdir / "t80_lib"
+    obj = workdir / "t80_obj"
+    lib.mkdir(parents=True, exist_ok=True)
+    netlist = workdir / "t80s.v"
+    exe = workdir / ("tb_t80.exe" if os.name == "nt" else "tb_t80")
+
+    env = os.environ.copy()
+    env["PATH"] = os.pathsep.join(
+        [str(Path(ghdl).parent), str(gxx.parent), env.get("PATH", "")]
+    )
+    env["VERILATOR_ROOT"] = str(verilator_root)
+    include = verilator_root / "include"
+
+    steps = (
+        [str(ghdl), "-a", *GHDL_FLAGS, f"--workdir={lib}"]
+        + [str(root / s) for s in T80_SOURCES],
+        # T2Write => 0, as fpga_nrx.v instantiates it.
+        [str(ghdl), "--synth", *GHDL_FLAGS, *GHDL_ELAB_FLAGS, f"--workdir={lib}"]
+        + ["-gT2Write=0", "--out=verilog", "T80s"],
+        [str(verilator_bin), "--cc", "-O3", "--prefix", "Vt80s"]
+        + ["--top-module", "T80s", "-Wno-fatal", "-Wno-lint", "-Wno-style"]
+        + [str(netlist), "--Mdir", str(obj)],
+    )
+    for command in steps:
+        out = subprocess.run(
+            command, capture_output=True, text=True, env=env, check=False
+        )
+        if out.returncode != 0:
+            print(out.stdout + out.stderr, file=sys.stderr)
+            raise Fail(f"T80 model build failed at: {Path(command[0]).name}")
+        if "--synth" in command:
+            netlist.write_text(out.stdout)
+
+    sources = sorted(str(f) for f in obj.glob("*.cpp")) + [
+        str(include / "verilated.cpp"),
+        str(include / "verilated_threads.cpp"),
+        str(root / "sim" / "verilator" / "tb_t80.cpp"),
+    ]
+    command = [str(gxx), "-O2", "-std=c++17", "-w", f"-I{obj}", f"-I{include}"]
+    command += [f"-I{include / 'vltstd'}", *sources, "-o", str(exe)]
+    out = subprocess.run(command, capture_output=True, text=True, env=env, check=False)
+    if out.returncode != 0:
+        print(out.stdout + out.stderr, file=sys.stderr)
+        raise Fail("T80 model build failed at: g++")
+    return exe, env
+
+
+def exerciser_count(image):
+    # zexdoc and zexall open with JP start; 12 bytes into start, LD HL,tests
+    # loads a zero-terminated table of test pointers. tb_t80.cpp reads it the
+    # same way to run one entry.
+    mem = bytearray(0x100) + image.read_bytes()
+    start = mem[0x101] | mem[0x102] << 8
+    table = mem[start + 13] | mem[start + 14] << 8
+    count = 0
+    while mem[table + 2 * count] or mem[table + 2 * count + 1]:
+        count += 1
+    return count
+
+
+def t80_runs(root, exercisers):
+    fuse = root / FUSE_TESTS
+    runs = [
+        ("FUSE", ["fuse", str(fuse / "tests.in"), str(fuse / "tests.expected")]),
+        ("prelim", ["cpm", str(root / EXERCISERS / "prelim.com")]),
+    ]
+    if not exercisers:
+        return runs
+
+    for tape in Z80TEST_TAPES:
+        runs.append((tape, ["tap", str(root / Z80TEST / f"{tape}.tap")]))
+    for name in ("zexdoc", "zexall"):
+        image = root / EXERCISERS / f"{name}.cim"
+        if not image.is_file():
+            runs.append((name, ["cpm", str(image)]))
+            continue
+        for index in range(exerciser_count(image)):
+            runs.append(
+                (f"{name} {index:2d}", ["cpm", str(image), "--test", str(index)])
+            )
+    return runs
+
+
+def run_t80_model(ghdl, verilator, root, workdir, exercisers):
+    step("T80 model: GHDL synth -> Verilator -> g++")
+    exe, env = build_t80_model(ghdl, verilator, root, workdir)
+    runs = t80_runs(root, exercisers)
+    step(f"T80 model: {len(runs)} run(s)")
+
+    def one(run):
+        name, args = run
+        out = subprocess.run(
+            [str(exe), *args],
+            capture_output=True,
+            text=True,
+            errors="replace",
+            env=env,
+            cwd=str(root),
+            check=False,
+        )
+        return name, out.returncode == 0, out.stdout + out.stderr
+
+    # The runs are independent, so they share the machine's cores. Each prints
+    # its verdict on one line; a failing run's whole output follows it.
+    failed = 0
+    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as pool:
+        for name, passed, output in pool.map(one, runs):
+            verdict = [
+                line
+                for line in output.splitlines()
+                if line.startswith(("PASS", "FAIL"))
+            ]
+            print(f"  {name:10s} {verdict[-1] if verdict else 'no verdict'}")
+            if not passed:
+                failed += 1
+                print(output)
+    return failed == 0
+
+
 def discover(sim_dir, only):
-    benches = sorted(sim_dir.glob("tb_*.v")) + sorted(
-        (sim_dir / "vhdl").glob("tb_*.vhd")
+    benches = (
+        sorted(sim_dir.glob("tb_*.v"))
+        + sorted((sim_dir / "vhdl").glob("tb_*.vhd"))
+        + sorted((sim_dir / "verilator").glob("tb_*.cpp"))
     )
     if not benches:
         raise Fail(f"No testbenches found under {sim_dir}")
@@ -299,7 +452,9 @@ def run_one(iverilog, bench, srcs, defines, sim_dir, workdir):
     return result.returncode == 0 and "FAIL" not in result.stdout
 
 
-def simulate(root, only, iverilog, ghdl_path, image=None, max_cycles=None):
+def simulate(
+    root, only, iverilog, ghdl_path, image=None, max_cycles=None, exercisers=False
+):
     sim_dir = root / "sim"
     iverilog = find_iverilog(iverilog)
     step(f"Icarus: {iverilog}")
@@ -310,6 +465,12 @@ def simulate(root, only, iverilog, ghdl_path, image=None, max_cycles=None):
     else:
         step("GHDL not found — VHDL testbenches will be skipped")
 
+    verilator = find_verilator()
+    if verilator:
+        step(f"Verilator: {verilator[0]}")
+    else:
+        step("Verilator not found, so the T80 model run is skipped")
+
     srcs, defines = sources(root)
     benches = discover(sim_dir, only)
     step(f"Running {len(benches)} testbench(es)")
@@ -318,7 +479,14 @@ def simulate(root, only, iverilog, ghdl_path, image=None, max_cycles=None):
     passed, failed, skipped = [], [], []
     with tempfile.TemporaryDirectory(prefix="rallyx-sim-") as tmp:
         for bench in benches:
-            if bench.suffix == ".vhd":
+            if bench.suffix == ".cpp":
+                if ghdl is None or verilator is None:
+                    step(f"{bench.stem}: SKIPPED, needs both GHDL and Verilator")
+                    skipped.append(bench.stem)
+                    print()
+                    continue
+                ok_run = run_t80_model(ghdl, verilator, root, Path(tmp), exercisers)
+            elif bench.suffix == ".vhd":
                 if ghdl is None:
                     step(f"{bench.stem}: SKIPPED — ghdl not found (VHDL bench)")
                     skipped.append(bench.stem)
@@ -382,9 +550,23 @@ def main():
             "(default: the bench's own 40)"
         ),
     )
+    parser.add_argument(
+        "--exercisers",
+        action="store_true",
+        help=(
+            "also run z80test and every zexdoc and zexall entry against the "
+            "T80 model, spread across all cores (tens of minutes)"
+        ),
+    )
     args = parser.parse_args()
     simulate(
-        args.root, args.test, args.iverilog, args.ghdl, args.image, args.max_mcycles
+        args.root,
+        args.test,
+        args.iverilog,
+        args.ghdl,
+        args.image,
+        args.max_mcycles,
+        args.exercisers,
     )
 
 
