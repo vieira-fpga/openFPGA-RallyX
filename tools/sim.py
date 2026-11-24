@@ -56,9 +56,11 @@ T80_SOURCES = (
     "src/fpga/rtl/cpu/T80s.vhd",
 )
 # --std=93 because T80 is VHDL-93; -fsynopsys for its non-standard IEEE
-# packages; --syn-binding because T80's component is declared in a package,
-# which GHDL's strict default binding refuses to resolve.
-GHDL_FLAGS = ("--std=93", "-fsynopsys")
+# packages; -fexplicit because T80 compares vectors with both std_logic_1164
+# and std_logic_unsigned visible, an ambiguity Quartus resolves the same way;
+# --syn-binding because T80's component is declared in a package, which GHDL's
+# strict default binding refuses to resolve.
+GHDL_FLAGS = ("--std=93", "-fsynopsys", "-fexplicit")
 GHDL_ELAB_FLAGS = ("--syn-binding",)
 
 

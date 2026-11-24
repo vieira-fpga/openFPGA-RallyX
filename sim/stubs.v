@@ -44,11 +44,16 @@ endmodule
 
 
 // Inert Z80. Holds every bus strobe inactive so the surrounding glue is quiet;
-// the CPU-clock testbench measures the divider feeding CLK_n, not the core.
+// the CPU-clock testbench measures the divider feeding CLK, not the core.
 module T80s
+#(
+    parameter T2Write = 1
+)
 (
     input         RESET_n,
-    input         CLK_n,
+    input         CLK,
+    input         CEN,
+    input         OUT0,
     input         WAIT_n,
     input         INT_n,
     input         NMI_n,
