@@ -3,6 +3,8 @@
 --  SCF/CCF take YF/XF from whether the previous instruction wrote F, not from
 --  whether F changed value, so an instruction that rewrites the same flags
 --  still counts. Passes Patrik Rak's z80ccf.
+--  In interrupt mode 0, a 00 on the bus runs as NOP rather than starting the
+--  IM 2 sequence.
 --
 -- ****
 -- T80(c) core. Attempt to finish all undocumented features and provide
@@ -201,6 +203,10 @@ architecture rtl of T80 is
 	signal F_Wr_Prev            : std_logic;
 	signal F_Wr_Cur             : std_logic;
 
+	-- MCode reads opcode 00 in an interrupt cycle as the IM 2 sequence, so it
+	-- is told of interrupts in mode 2 only. In mode 0 a 00 on the bus is NOP.
+	signal IntCycle_IM2         : std_logic;
+
 	-- ALU signals
 	signal BusB                 : std_logic_vector(7 downto 0);
 	signal BusA                 : std_logic_vector(7 downto 0);
@@ -298,7 +304,7 @@ begin
 			MCycle      => MCycle,
 			F           => F,
 			NMICycle    => NMICycle,
-			IntCycle    => IntCycle,
+			IntCycle    => IntCycle_IM2,
 			XY_State    => XY_State,
 			MCycles     => MCycles_d,
 			TStates     => TStates,
@@ -1420,4 +1426,5 @@ begin
 	end process;
 
 	Auto_Wait <= '1' when IntCycle = '1' and MCycle = "001" else '0';
+	IntCycle_IM2 <= IntCycle when IStatus = "10" else '0';
 end;
